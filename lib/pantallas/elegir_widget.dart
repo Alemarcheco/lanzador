@@ -45,7 +45,11 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
     final r = await Plataforma.anadirWidget(p.proveedor);
     if (!mounted) return;
     setState(() => _ocupado = false);
-    if (r == null) return;
+    if (r == null || r['id'] == null) {
+      final motivo = r?['error'] as String? ?? 'No se pudo añadir el widget';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(motivo)));
+      return;
+    }
     final id = (r['id'] as num).toInt();
     final alto = (r['alto'] as num?)?.toDouble() ?? p.alto.toDouble();
     widget.modelo.agregarWidget(id, alto);

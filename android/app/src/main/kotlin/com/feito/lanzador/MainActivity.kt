@@ -172,7 +172,11 @@ class MainActivity : FlutterActivity() {
 
     private fun proveedoresWidget(): List<Map<String, Any>> {
         val pm = packageManager
-        return widgetManager.installedProviders.map { info ->
+        return widgetManager.installedProviders.filter { info ->
+            // Widgets que su app pide ocultar del selector.
+            Build.VERSION.SDK_INT < 28 ||
+                (info.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_HIDE_FROM_PICKER) == 0
+        }.map { info ->
             val paquete = info.provider.packageName
             val app = try {
                 pm.getApplicationLabel(pm.getApplicationInfo(paquete, 0)).toString()
@@ -208,12 +212,15 @@ class MainActivity : FlutterActivity() {
 
     private fun anadirWidget(proveedor: String, resultado: MethodChannel.Result) {
         val cn = ComponentName.unflattenFromString(proveedor)
-        if (cn == null) { resultado.success(null); return }
+        if (cn == null) { resultado.success(mapOf("error" to "Widget no encontrado")); return }
         resultadoWidget?.success(null)
         resultadoWidget = resultado
         val id = widgetHost.allocateAppWidgetId()
         widgetPendiente = id
-        if (widgetManager.bindAppWidgetIdIfAllowed(id, cn)) {
+        val permitido = try {
+            widgetManager.bindAppWidgetIdIfAllowed(id, cn)
+        } catch (_: Exception) { false }
+        if (permitido) {
             configurarWidget(id)
         } else {
             // Android pide permiso al usuario la primera vez.
@@ -223,13 +230,16 @@ class MainActivity : FlutterActivity() {
             try {
                 @Suppress("DEPRECATION")
                 startActivityForResult(i, PEDIR_PERMISO)
-            } catch (_: Exception) { cancelarWidget() }
+            } catch (_: Exception) { cancelarWidget("Android no dejó pedir el permiso para widgets") }
         }
     }
 
     private fun configurarWidget(id: Int) {
         val info = widgetManager.getAppWidgetInfo(id)
-        if (info?.configure == null) { terminarWidget(id); return }
+        if (info == null) { cancelarWidget("La app no permitió crear el widget"); return }
+        val configuracionOpcional = Build.VERSION.SDK_INT >= 31 &&
+            (info.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL) != 0
+        if (info.configure == null || configuracionOpcional) { terminarWidget(id); return }
         try {
             if (Build.VERSION.SDK_INT >= 26) {
                 widgetHost.startAppWidgetConfigureActivityForResult(this, id, 0, CONFIGURAR, null)
@@ -253,12 +263,12 @@ class MainActivity : FlutterActivity() {
         widgetPendiente = -1
     }
 
-    private fun cancelarWidget() {
+    private fun cancelarWidget(motivo: String) {
         if (widgetPendiente != -1) {
             try { widgetHost.deleteAppWidgetId(widgetPendiente) } catch (_: Exception) {}
         }
         widgetPendiente = -1
-        resultadoWidget?.success(null)
+        resultadoWidget?.success(mapOf("error" to motivo))
         resultadoWidget = null
     }
 
@@ -268,8 +278,22 @@ class MainActivity : FlutterActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         val id = data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetPendiente) ?: widgetPendiente
         when (requestCode) {
-            PEDIR_PERMISO -> if (resultCode == Activity.RESULT_OK && id != -1) configurarWidget(id) else cancelarWidget()
-            CONFIGURAR -> if (resultCode == Activity.RESULT_OK && id != -1) terminarWidget(id) else cancelarWidget()
+            PEDIR_PERMISO ->
+                // Algunos teléfonos devuelven "cancelado" aunque el permiso se dio:
+                // se comprueba si el widget quedó vinculado.
+                if (id != -1 && (resultCode == Activity.RESULT_OK || widgetManager.getAppWidgetInfo(id) != null)) {
+                    configurarWidget(id)
+                } else {
+                    cancelarWidget("Hace falta permitir que Lanzador cree widgets")
+                }
+            CONFIGURAR ->
+                // Muchas apps del clima cierran su configuración sin decir "OK":
+                // si el widget sigue existiendo, se añade igual (se puede quitar después).
+                if (id != -1 && widgetManager.getAppWidgetInfo(id) != null) {
+                    terminarWidget(id)
+                } else {
+                    cancelarWidget("Se canceló la configuración del widget")
+                }
         }
     }
 
