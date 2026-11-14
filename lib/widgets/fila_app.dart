@@ -22,12 +22,15 @@ class IconoApp extends StatelessWidget {
         builder: (context, snap) {
           final datos = snap.data;
           if (datos == null) return const SizedBox();
-          return Image.memory(
-            datos,
-            width: tam,
-            height: tam,
-            gaplessPlayback: true,
-            filterQuality: FilterQuality.medium,
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(tam * 0.26),
+            child: Image.memory(
+              datos,
+              width: tam,
+              height: tam,
+              gaplessPlayback: true,
+              filterQuality: FilterQuality.medium,
+            ),
           );
         },
       ),

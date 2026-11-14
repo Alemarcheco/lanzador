@@ -86,6 +86,14 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
             backgroundColor: Colors.transparent,
             body: Stack(
               children: [
+                if (m.fondoGalaxia)
+                  Positioned.fill(
+                    child: Image.asset(
+                      'assets/fondos/galaxia.jpg',
+                      fit: BoxFit.cover,
+                      gaplessPlayback: true,
+                    ),
+                  ),
                 if (m.oscurecer)
                   const Positioned.fill(
                     child: IgnorePointer(

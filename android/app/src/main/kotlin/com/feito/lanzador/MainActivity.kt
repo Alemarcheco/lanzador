@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.drawable.AdaptiveIconDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -169,8 +170,16 @@ class MainActivity : FlutterActivity() {
         }
         val mapa = Bitmap.createBitmap(tam, tam, Bitmap.Config.ARGB_8888)
         val lienzo = Canvas(mapa)
-        dibujo.setBounds(0, 0, tam, tam)
-        dibujo.draw(lienzo)
+        if (Build.VERSION.SDK_INT >= 26 && dibujo is AdaptiveIconDrawable) {
+            // Se dibujan las capas completas (sin la máscara del sistema) para que
+            // Flutter les dé la forma de cuadrado redondeado.
+            val m = tam / 4
+            dibujo.background?.let { it.setBounds(-m, -m, tam + m, tam + m); it.draw(lienzo) }
+            dibujo.foreground?.let { it.setBounds(-m, -m, tam + m, tam + m); it.draw(lienzo) }
+        } else {
+            dibujo.setBounds(0, 0, tam, tam)
+            dibujo.draw(lienzo)
+        }
         val salida = ByteArrayOutputStream()
         mapa.compress(Bitmap.CompressFormat.PNG, 100, salida)
         mapa.recycle()

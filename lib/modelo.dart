@@ -27,6 +27,7 @@ class Modelo extends ChangeNotifier {
   bool reloj24 = true;
   bool mostrarIconos = true;
   bool oscurecer = true;
+  bool fondoGalaxia = true;
   double tamTexto = 20;
 
   final Map<String, Future<Uint8List?>> _iconos = {};
@@ -37,6 +38,7 @@ class Modelo extends ChangeNotifier {
     reloj24 = p.getBool('reloj24') ?? true;
     mostrarIconos = p.getBool('mostrarIconos') ?? true;
     oscurecer = p.getBool('oscurecer') ?? true;
+    fondoGalaxia = p.getBool('fondoGalaxia') ?? true;
     tamTexto = p.getDouble('tamTexto') ?? 20;
     final guardados = p.getStringList('favoritos');
     await recargar();
@@ -168,6 +170,12 @@ class Modelo extends ChangeNotifier {
   void ponerOscurecer(bool v) {
     oscurecer = v;
     _prefs?.setBool('oscurecer', v);
+    notifyListeners();
+  }
+
+  void ponerFondoGalaxia(bool v) {
+    fondoGalaxia = v;
+    _prefs?.setBool('fondoGalaxia', v);
     notifyListeners();
   }
 

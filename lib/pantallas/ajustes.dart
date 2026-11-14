@@ -52,6 +52,13 @@ class PantallaAjustes extends StatelessWidget {
               onChanged: m.ponerMostrarIconos,
             ),
             SwitchListTile(
+              secondary: const Icon(Icons.landscape, color: Colors.white),
+              title: const Text('Fondo de galaxia', style: _blanco),
+              subtitle: const Text('Si lo apagas se usa el fondo de pantalla del teléfono', style: _gris),
+              value: m.fondoGalaxia,
+              onChanged: m.ponerFondoGalaxia,
+            ),
+            SwitchListTile(
               secondary: const Icon(Icons.contrast, color: Colors.white),
               title: const Text('Oscurecer un poco el fondo', style: _blanco),
               subtitle: const Text('Ayuda a leer con fondos claros', style: _gris),
@@ -72,7 +79,7 @@ class PantallaAjustes extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.wallpaper, color: Colors.white),
-              title: const Text('Cambiar fondo de pantalla', style: _blanco),
+              title: const Text('Cambiar fondo de pantalla del teléfono', style: _blanco),
               onTap: Plataforma.elegirFondo,
             ),
             _titulo('Sistema'),
