@@ -54,7 +54,7 @@ class PantallaAjustes extends StatelessWidget {
             SwitchListTile(
               secondary: const Icon(Icons.landscape, color: Colors.white),
               title: const Text('Fondo de galaxia', style: _blanco),
-              subtitle: const Text('Si lo apagas se usa el fondo de pantalla del teléfono', style: _gris),
+              subtitle: const Text('Apagado: se usa el fondo de pantalla del teléfono', style: _gris),
               value: m.fondoGalaxia,
               onChanged: m.ponerFondoGalaxia,
             ),
