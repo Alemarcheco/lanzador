@@ -49,6 +49,7 @@ class Modelo extends ChangeNotifier {
   Map<String, int> notificaciones = {};
   bool puntosNotificacion = true;
   bool permisoNotificaciones = false;
+  bool notificacionesDisponibles = false;
   bool cargado = false;
 
   bool reloj24 = true;
@@ -318,6 +319,7 @@ class Modelo extends ChangeNotifier {
   }
 
   Future<void> comprobarPermisoNotificaciones() async {
+    notificacionesDisponibles = await Plataforma.notificacionesDisponibles();
     permisoNotificaciones = await Plataforma.permisoNotificaciones();
     if (permisoNotificaciones) notificaciones = await Plataforma.notificaciones();
     notifyListeners();

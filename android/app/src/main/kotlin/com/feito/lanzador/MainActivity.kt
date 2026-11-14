@@ -138,6 +138,12 @@ class MainActivity : FlutterActivity() {
                 "packsIconos" -> enHilo(resultado) { packsIconos() }
                 "notificaciones" -> resultado.success(Notificaciones.conteo())
                 "permisoNotificaciones" -> resultado.success(tienePermisoNotificaciones())
+                "notificacionesDisponibles" -> resultado.success(
+                    try {
+                        packageManager.getServiceInfo(ComponentName(this, Notificaciones::class.java), 0)
+                        true
+                    } catch (_: Exception) { false }
+                )
                 "ultimoError" -> resultado.success(
                     try { java.io.File(filesDir, "ultimo_error.txt").takeIf { it.exists() }?.readText() } catch (_: Exception) { null }
                 )

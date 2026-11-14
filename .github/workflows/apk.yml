@@ -22,19 +22,24 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter test
-      - run: flutter build apk --release --build-number=${{ github.run_number }}
-      - run: cp build/app/outputs/flutter-apk/app-release.apk lanzador.apk
+      - run: flutter build apk --release --flavor normal --build-number=${{ github.run_number }}
+      - run: flutter build apk --release --flavor completo --build-number=${{ github.run_number }}
+      - run: |
+          cp build/app/outputs/flutter-apk/app-normal-release.apk lanzador.apk
+          cp build/app/outputs/flutter-apk/app-completo-release.apk lanzador-con-notificaciones.apk
       - uses: actions/upload-artifact@v4
         with:
           name: lanzador-apk
-          path: lanzador.apk
+          path: |
+            lanzador.apk
+            lanzador-con-notificaciones.apk
       # Publica el APK en Releases: enlace directo
       # https://github.com/Alemarcheco/lanzador/releases/latest/download/lanzador.apk
       - name: Publicar release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ github.run_number }}" lanzador.apk \
+          gh release create "v${{ github.run_number }}" lanzador.apk lanzador-con-notificaciones.apk \
             --title "Lanzador v${{ github.run_number }}" \
             --notes "APK compilado automáticamente desde ${{ github.sha }}" \
             --latest

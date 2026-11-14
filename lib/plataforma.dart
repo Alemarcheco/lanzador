@@ -132,6 +132,14 @@ class Plataforma {
     }
   }
 
+  static Future<bool> notificacionesDisponibles() async {
+    try {
+      return await _canal.invokeMethod<bool>('notificacionesDisponibles') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<bool> permisoNotificaciones() async {
     try {
       return await _canal.invokeMethod<bool>('permisoNotificaciones') ?? false;

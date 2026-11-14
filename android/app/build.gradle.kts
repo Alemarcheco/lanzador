@@ -29,6 +29,14 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "tipo"
+    productFlavors {
+        // Sin acceso a notificaciones: se instala sin avisos de Play Protect.
+        create("normal") { dimension = "tipo" }
+        // Con puntos de notificación (pide acceso a las notificaciones).
+        create("completo") { dimension = "tipo" }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

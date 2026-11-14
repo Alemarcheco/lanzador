@@ -34,47 +34,100 @@ class PantallaAjustes extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.star, color: Colors.white),
               title: const Text('Editar favoritos', style: _blanco),
-              subtitle: Text('${m.favoritas.length} apps · ordenar, quitar y añadir', style: _gris),
+              subtitle: Text(
+                '${m.favoritas.length} apps · ordenar, quitar y añadir',
+                style: _gris,
+              ),
               trailing: const Icon(Icons.chevron_right, color: Colors.white54),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (_) => PantallaFavoritos(modelo: m)),
+                MaterialPageRoute<void>(
+                  builder: (_) => PantallaFavoritos(modelo: m),
+                ),
               ),
             ),
             _titulo('Personalizar'),
-            _ir(context, Icons.palette_outlined, 'Temas', m.tema.nombre, PantallaTemas(modelo: m)),
-            _ir(context, Icons.schedule, 'Reloj', 'Estilo, tamaño, color y posición', PantallaReloj(modelo: m)),
-            _ir(context, Icons.apps, 'Iconos', 'Forma, tamaño, blanco y negro y paquetes de iconos',
-                PantallaIconos(modelo: m)),
-            _titulo('Notificaciones'),
-            SwitchListTile(
-              secondary: const Icon(Icons.circle_notifications_outlined, color: Colors.white),
-              title: const Text('Puntos de notificación', style: _blanco),
-              subtitle: const Text('Un punto junto al nombre de las apps con notificaciones', style: _gris),
-              value: m.puntosNotificacion,
-              onChanged: m.ponerPuntosNotificacion,
+            _ir(
+              context,
+              Icons.palette_outlined,
+              'Temas',
+              m.tema.nombre,
+              PantallaTemas(modelo: m),
             ),
-            if (m.puntosNotificacion && !m.permisoNotificaciones)
-              ListTile(
-                leading: const Icon(Icons.lock_open, color: Color(0xFFFFD54F)),
-                title: const Text('Dar acceso a las notificaciones', style: _blanco),
+            _ir(
+              context,
+              Icons.schedule,
+              'Reloj',
+              'Estilo, tamaño, color y posición',
+              PantallaReloj(modelo: m),
+            ),
+            _ir(
+              context,
+              Icons.apps,
+              'Iconos',
+              'Forma, tamaño, blanco y negro y paquetes de iconos',
+              PantallaIconos(modelo: m),
+            ),
+            _titulo('Notificaciones'),
+            if (!m.notificacionesDisponibles)
+              const ListTile(
+                leading: Icon(
+                  Icons.circle_notifications_outlined,
+                  color: Colors.white54,
+                ),
+                title: Text('Puntos de notificación', style: _blanco),
+                subtitle: Text(
+                  'Solo en la versión "con notificaciones" (lanzador-con-notificaciones.apk). '
+                  'Esta versión no los incluye para que Play Protect no bloquee la instalación.',
+                  style: _gris,
+                ),
+              )
+            else ...[
+              SwitchListTile(
+                secondary: const Icon(
+                  Icons.circle_notifications_outlined,
+                  color: Colors.white,
+                ),
+                title: const Text('Puntos de notificación', style: _blanco),
                 subtitle: const Text(
+                  'Un punto junto al nombre de las apps con notificaciones',
+                  style: _gris,
+                ),
+                value: m.puntosNotificacion,
+                onChanged: m.ponerPuntosNotificacion,
+              ),
+              if (m.puntosNotificacion && !m.permisoNotificaciones)
+                ListTile(
+                  leading: const Icon(
+                    Icons.lock_open,
+                    color: Color(0xFFFFD54F),
+                  ),
+                  title: const Text(
+                    'Dar acceso a las notificaciones',
+                    style: _blanco,
+                  ),
+                  subtitle: const Text(
                     'Activa "Lanzador" en la lista. Si Samsung dice "configuración restringida": '
                     'Ajustes → Aplicaciones → Lanzador → ⋮ → Permitir configuración restringida, y vuelve a intentarlo.',
-                    style: _gris),
-                onTap: Plataforma.pedirPermisoNotificaciones,
-              ),
+                    style: _gris,
+                  ),
+                  onTap: Plataforma.pedirPermisoNotificaciones,
+                ),
+            ],
             _titulo('Widgets'),
             ListTile(
               leading: const Icon(Icons.widgets_outlined, color: Colors.white),
               title: const Text('Añadir widget', style: _blanco),
               subtitle: Text(
-                  '${m.widgets.length} en la pantalla · mantén pulsado un widget para cambiar su tamaño, moverlo o quitarlo',
-                  style: _gris),
+                '${m.widgets.length} en la pantalla · mantén pulsado un widget para cambiar su tamaño, moverlo o quitarlo',
+                style: _gris,
+              ),
               trailing: const Icon(Icons.chevron_right, color: Colors.white54),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (_) => PantallaElegirWidget(modelo: m)),
+                MaterialPageRoute<void>(
+                  builder: (_) => PantallaElegirWidget(modelo: m),
+                ),
               ),
             ),
             _titulo('Aspecto'),
@@ -93,14 +146,20 @@ class PantallaAjustes extends StatelessWidget {
             SwitchListTile(
               secondary: const Icon(Icons.landscape, color: Colors.white),
               title: const Text('Fondo de galaxia', style: _blanco),
-              subtitle: const Text('Apagado: se usa el fondo de pantalla del teléfono', style: _gris),
+              subtitle: const Text(
+                'Apagado: se usa el fondo de pantalla del teléfono',
+                style: _gris,
+              ),
               value: m.fondoGalaxia,
               onChanged: m.ponerFondoGalaxia,
             ),
             SwitchListTile(
               secondary: const Icon(Icons.contrast, color: Colors.white),
               title: const Text('Oscurecer un poco el fondo', style: _blanco),
-              subtitle: const Text('Ayuda a leer con fondos claros', style: _gris),
+              subtitle: const Text(
+                'Ayuda a leer con fondos claros',
+                style: _gris,
+              ),
               value: m.oscurecer,
               onChanged: m.ponerOscurecer,
             ),
@@ -118,14 +177,20 @@ class PantallaAjustes extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.wallpaper, color: Colors.white),
-              title: const Text('Cambiar fondo de pantalla del teléfono', style: _blanco),
+              title: const Text(
+                'Cambiar fondo de pantalla del teléfono',
+                style: _blanco,
+              ),
               onTap: Plataforma.elegirFondo,
             ),
             _titulo('Sistema'),
             ListTile(
               leading: const Icon(Icons.home_outlined, color: Colors.white),
               title: const Text('Usar como pantalla de inicio', style: _blanco),
-              subtitle: const Text('Elige "Lanzador" como app de inicio predeterminada', style: _gris),
+              subtitle: const Text(
+                'Elige "Lanzador" como app de inicio predeterminada',
+                style: _gris,
+              ),
               onTap: Plataforma.launcherPredeterminado,
             ),
             FutureBuilder<String?>(
@@ -134,13 +199,27 @@ class PantallaAjustes extends StatelessWidget {
                 final e = s.data;
                 if (e == null || e.isEmpty) return const SizedBox();
                 return ListTile(
-                  leading: const Icon(Icons.bug_report_outlined, color: Color(0xFFFF8A80)),
-                  title: const Text('Hubo un error (toca para copiarlo)', style: _blanco),
-                  subtitle: Text(e.split('\n').take(3).join('\n'), style: _gris, maxLines: 3),
+                  leading: const Icon(
+                    Icons.bug_report_outlined,
+                    color: Color(0xFFFF8A80),
+                  ),
+                  title: const Text(
+                    'Hubo un error (toca para copiarlo)',
+                    style: _blanco,
+                  ),
+                  subtitle: Text(
+                    e.split('\n').take(3).join('\n'),
+                    style: _gris,
+                    maxLines: 3,
+                  ),
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: e));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Copiado. Pégalo en el chat para que lo arregle.')),
+                      const SnackBar(
+                        content: Text(
+                          'Copiado. Pégalo en el chat para que lo arregle.',
+                        ),
+                      ),
                     );
                   },
                   onLongPress: Plataforma.borrarError,
@@ -164,20 +243,35 @@ class PantallaAjustes extends StatelessWidget {
     );
   }
 
-  Widget _ir(BuildContext context, IconData icono, String titulo, String sub, Widget pantalla) => ListTile(
-        leading: Icon(icono, color: Colors.white),
-        title: Text(titulo, style: _blanco),
-        subtitle: Text(sub, style: _gris),
-        trailing: const Icon(Icons.chevron_right, color: Colors.white54),
-        onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => pantalla)),
-      );
+  Widget _ir(
+    BuildContext context,
+    IconData icono,
+    String titulo,
+    String sub,
+    Widget pantalla,
+  ) => ListTile(
+    leading: Icon(icono, color: Colors.white),
+    title: Text(titulo, style: _blanco),
+    subtitle: Text(sub, style: _gris),
+    trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => pantalla),
+    ),
+  );
 
   Widget _titulo(String t) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-        child: Text(t.toUpperCase(),
-            style: const TextStyle(
-                color: Color(0xFFFFD54F), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-      );
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+    child: Text(
+      t.toUpperCase(),
+      style: const TextStyle(
+        color: Color(0xFFFFD54F),
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
 }
 
 /// Ordenar (arrastrando), quitar y añadir favoritos.
@@ -203,13 +297,17 @@ class PantallaFavoritos extends StatelessWidget {
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute<void>(builder: (_) => PantallaElegirApps(modelo: m)),
+              MaterialPageRoute<void>(
+                builder: (_) => PantallaElegirApps(modelo: m),
+              ),
             ),
             icon: const Icon(Icons.add),
             label: const Text('Añadir'),
           ),
           body: favs.isEmpty
-              ? const Center(child: Text('No hay favoritos todavía', style: _gris))
+              ? const Center(
+                  child: Text('No hay favoritos todavía', style: _gris),
+                )
               : ReorderableListView.builder(
                   padding: const EdgeInsets.only(bottom: 96),
                   itemCount: favs.length,
@@ -225,14 +323,20 @@ class PantallaFavoritos extends StatelessWidget {
                         children: [
                           IconButton(
                             tooltip: 'Quitar',
-                            icon: const Icon(Icons.remove_circle_outline, color: Colors.white70),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: Colors.white70,
+                            ),
                             onPressed: () => m.alternarFavorita(a),
                           ),
                           ReorderableDragStartListener(
                             index: i,
                             child: const Padding(
                               padding: EdgeInsets.all(8),
-                              child: Icon(Icons.drag_handle, color: Colors.white70),
+                              child: Icon(
+                                Icons.drag_handle,
+                                color: Colors.white70,
+                              ),
                             ),
                           ),
                         ],
