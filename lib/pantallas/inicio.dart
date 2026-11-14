@@ -12,7 +12,11 @@ import 'elegir_widget.dart';
 import 'personalizar.dart';
 
 class PantallaInicio extends StatefulWidget {
-  const PantallaInicio({super.key, required this.modelo, required this.navegador});
+  const PantallaInicio({
+    super.key,
+    required this.modelo,
+    required this.navegador,
+  });
 
   final Modelo modelo;
   final GlobalKey<NavigatorState> navegador;
@@ -21,7 +25,19 @@ class PantallaInicio extends StatefulWidget {
   State<PantallaInicio> createState() => _PantallaInicioState();
 }
 
-class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObserver {
+class _PantallaInicioState extends State<PantallaInicio>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  // Animación suave al volver al inicio desde una app.
+  late final AnimationController _entrada = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 380),
+    value: 1,
+  );
+  late final Animation<double> _curva = CurvedAnimation(
+    parent: _entrada,
+    curve: Curves.easeOutCubic,
+  );
+
   String _seleccion = marcaFavoritos;
   Modelo get m => widget.modelo;
 
@@ -40,6 +56,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
 
   @override
   void dispose() {
+    _entrada.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -47,11 +64,13 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _entrada.forward(from: _entrada.value);
       m.recargar();
       m.recrearWidgets();
       m.comprobarPermisoNotificaciones();
     }
     if (state == AppLifecycleState.paused) {
+      _entrada.value = 0;
       // Al volver al launcher se muestran otra vez los favoritos.
       _volverAlInicio();
     }
@@ -69,7 +88,8 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
   }
 
   void _abrirBuscar() {
-    Navigator.of(context).push(rutaTransparente(PantallaBuscar(modelo: m, alAbrir: _abrir)));
+    Navigator.of(context)
+        .push(rutaTransparente(PantallaBuscar(modelo: m, alAbrir: _abrir)));
   }
 
   void _abrirAjustes() {
@@ -90,41 +110,70 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.widgets_outlined, color: Colors.white),
-              title: const Text('Añadir widget', style: TextStyle(color: Colors.white, fontSize: 16)),
+              title: const Text(
+                'Añadir widget',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => PantallaElegirWidget(modelo: m)),
+                  MaterialPageRoute<void>(
+                    builder: (_) => PantallaElegirWidget(modelo: m),
+                  ),
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.palette_outlined, color: Colors.white),
-              title: const Text('Temas', style: TextStyle(color: Colors.white, fontSize: 16)),
+              title: const Text(
+                'Temas',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
-                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PantallaTemas(modelo: m)));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => PantallaTemas(modelo: m),
+                  ),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.schedule, color: Colors.white),
-              title: const Text('Editar reloj', style: TextStyle(color: Colors.white, fontSize: 16)),
+              title: const Text(
+                'Editar reloj',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
-                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PantallaReloj(modelo: m)));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => PantallaReloj(modelo: m),
+                  ),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.apps, color: Colors.white),
-              title: const Text('Editar iconos', style: TextStyle(color: Colors.white, fontSize: 16)),
+              title: const Text(
+                'Editar iconos',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
-                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PantallaIconos(modelo: m)));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => PantallaIconos(modelo: m),
+                  ),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.wallpaper, color: Colors.white),
-              title: const Text('Fondo de pantalla', style: TextStyle(color: Colors.white, fontSize: 16)),
+              title: const Text(
+                'Fondo de pantalla',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 Plataforma.elegirFondo();
@@ -132,7 +181,10 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined, color: Colors.white),
-              title: const Text('Ajustes del launcher', style: TextStyle(color: Colors.white, fontSize: 16)),
+              title: const Text(
+                'Ajustes del launcher',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _abrirAjustes();
@@ -179,31 +231,44 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [Color(0x66000000), Color(0x11000000), Color(0x44000000)],
+                            colors: [
+                              Color(0x66000000),
+                              Color(0x11000000),
+                              Color(0x44000000),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                SafeArea(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(child: _zonaPrincipal(context)),
-                      SizedBox(
-                        width: 46,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 12, top: 140),
-                          child: IndiceLetras(
-                            letras: letras,
-                            seleccion: _seleccion,
-                            alElegir: (l) => setState(() => _seleccion = l),
-                            alAjustes: _abrirAjustes,
-                            tema: m.tema,
+                FadeTransition(
+                  opacity: _curva,
+                  child: ScaleTransition(
+                    scale: Tween(begin: 0.94, end: 1.0).animate(_curva),
+                    child: SafeArea(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(child: _zonaPrincipal(context)),
+                          SizedBox(
+                            width: 46,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 12,
+                                top: 140,
+                              ),
+                              child: IndiceLetras(
+                                letras: letras,
+                                seleccion: _seleccion,
+                                alElegir: (l) => setState(() => _seleccion = l),
+                                alAjustes: _abrirAjustes,
+                                tema: m.tema,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -233,7 +298,10 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
             Reloj(
               modelo: m,
               alMantener: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => PantallaReloj(modelo: m))),
+                MaterialPageRoute<void>(
+                  builder: (_) => PantallaReloj(modelo: m),
+                ),
+              ),
             ),
             const SizedBox(height: 22),
             Expanded(
@@ -242,14 +310,14 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
                 transitionBuilder: (child, anim) => FadeTransition(
                   opacity: anim,
                   child: SlideTransition(
-                    position: Tween(begin: const Offset(-0.04, 0), end: Offset.zero).animate(anim),
+                    position: Tween(
+                      begin: const Offset(-0.04, 0),
+                      end: Offset.zero,
+                    ).animate(anim),
                     child: child,
                   ),
                 ),
-                child: KeyedSubtree(
-                  key: ValueKey(_seleccion),
-                  child: _lista(),
-                ),
+                child: KeyedSubtree(key: ValueKey(_seleccion), child: _lista()),
               ),
             ),
           ],
@@ -280,13 +348,18 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
             padding: const EdgeInsets.only(left: 4, bottom: 4),
             child: Text(
               _seleccion,
-              style: m.tema.estilo(30, color: m.tema.acento, peso: FontWeight.w700),
+              style: m.tema.estilo(
+                30,
+                color: m.tema.acento,
+                peso: FontWeight.w700,
+              ),
             ),
           ),
         if (esFav)
           for (final w in m.widgets)
             VistaWidget(key: ObjectKey(w), widgetColocado: w, modelo: m),
-        for (final a in lista) FilaApp(app: a, modelo: m, alAbrir: () => _abrir(a)),
+        for (final a in lista)
+          FilaApp(app: a, modelo: m, alAbrir: () => _abrir(a)),
       ],
     );
   }
@@ -294,17 +367,19 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
 
 /// Ruta que deja ver el fondo de pantalla detrás.
 Route<void> rutaTransparente(Widget pantalla) => PageRouteBuilder<void>(
-      opaque: false,
-      barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 200),
-      reverseTransitionDuration: const Duration(milliseconds: 160),
-      pageBuilder: (_, _, _) => pantalla,
-      transitionsBuilder: (_, anim, _, child) => FadeTransition(
-        opacity: anim,
-        child: SlideTransition(
-          position: Tween(begin: const Offset(0, 0.04), end: Offset.zero)
-              .animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
-          child: child,
-        ),
-      ),
-    );
+  opaque: false,
+  barrierColor: Colors.transparent,
+  transitionDuration: const Duration(milliseconds: 200),
+  reverseTransitionDuration: const Duration(milliseconds: 160),
+  pageBuilder: (_, _, _) => pantalla,
+  transitionsBuilder: (_, anim, _, child) => FadeTransition(
+    opacity: anim,
+    child: SlideTransition(
+      position: Tween(
+        begin: const Offset(0, 0.04),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
+      child: child,
+    ),
+  ),
+);
