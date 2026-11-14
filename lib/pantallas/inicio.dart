@@ -31,7 +31,7 @@ class _PantallaInicioState extends State<PantallaInicio>
   // Animación suave al volver al inicio desde una app.
   late final AnimationController _entrada = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 380),
+    duration: const Duration(milliseconds: 180),
     value: 1,
   );
   late final Animation<double> _curva = CurvedAnimation(
@@ -280,7 +280,7 @@ class _PantallaInicioState extends State<PantallaInicio>
                 FadeTransition(
                   opacity: _curva,
                   child: ScaleTransition(
-                    scale: Tween(begin: 0.94, end: 1.0).animate(_curva),
+                    scale: Tween(begin: 0.97, end: 1.0).animate(_curva),
                     child: SafeArea(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
