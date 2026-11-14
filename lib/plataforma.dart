@@ -152,6 +152,18 @@ class Plataforma {
     }
   }
 
+  /// 'ok', 'falta_permiso' (administrador) o 'falta_accesibilidad'.
+  static Future<String> bloquearPantalla() async {
+    try {
+      return await _canal.invokeMethod<String>('bloquearPantalla') ??
+          'falta_permiso';
+    } catch (_) {
+      return 'falta_permiso';
+    }
+  }
+
+  static Future<void> pedirPermisoBloqueo() => _llamar('pedirPermisoBloqueo');
+
   static Future<bool> notificacionesDisponibles() async {
     try {
       return await _canal.invokeMethod<bool>('notificacionesDisponibles') ??

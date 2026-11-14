@@ -88,6 +88,38 @@ class _PantallaInicioState extends State<PantallaInicio>
     Plataforma.abrir(a);
   }
 
+  Future<void> _apagarPantalla() async {
+    final r = await Plataforma.bloquearPantalla();
+    if (r == 'ok' || !mounted) return;
+    final accesibilidad = r == 'falta_accesibilidad';
+    final ir = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Apagar con doble toque'),
+        content: Text(
+          accesibilidad
+              ? 'Activa "Lanzador: apagar pantalla con doble toque" en Accesibilidad → Aplicaciones instaladas. '
+                    'Si Samsung dice "configuración restringida": Ajustes → Aplicaciones → Lanzador → ⋮ → '
+                    'Permitir configuración restringida, y vuelve a intentarlo.'
+              : 'Para apagar la pantalla, Android pide activar al Lanzador como "administrador" '
+                    '(solo para bloquear). Ojo: tras apagarla así, se desbloquea con PIN o patrón '
+                    'en lugar de huella o cara.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Ahora no'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Activar'),
+          ),
+        ],
+      ),
+    );
+    if (ir == true) Plataforma.pedirPermisoBloqueo();
+  }
+
   void _abrirBuscar({bool teclado = true}) {
     Navigator.of(context).push(
       rutaTransparente(
@@ -307,6 +339,7 @@ class _PantallaInicioState extends State<PantallaInicio>
         if (v < -300) _abrirBuscar();
       },
       onLongPress: _menuInicio,
+      onDoubleTap: m.dobleToque ? _apagarPantalla : null,
       child: Padding(
         padding: const EdgeInsets.only(left: 28, right: 8),
         child: Column(

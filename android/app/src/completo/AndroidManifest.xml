@@ -12,5 +12,18 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <!-- Apagar la pantalla con doble toque sin perder la huella -->
+        <service
+            android:name=".ServicioBloqueo"
+            android:label="Lanzador: apagar pantalla con doble toque"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accesibilidad_bloqueo" />
+        </service>
     </application>
 </manifest>

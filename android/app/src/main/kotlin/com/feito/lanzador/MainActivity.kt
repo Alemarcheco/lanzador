@@ -138,6 +138,8 @@ class MainActivity : FlutterActivity() {
                 "packsIconos" -> enHilo(resultado) { packsIconos() }
                 "notificaciones" -> resultado.success(Notificaciones.conteo())
                 "permisoNotificaciones" -> resultado.success(tienePermisoNotificaciones())
+                "bloquearPantalla" -> resultado.success(bloquearPantalla())
+                "pedirPermisoBloqueo" -> resultado.success(intentar { pedirPermisoBloqueo() })
                 "notificacionesDisponibles" -> resultado.success(
                     try {
                         packageManager.getServiceInfo(ComponentName(this, Notificaciones::class.java), 0)
@@ -368,6 +370,36 @@ class MainActivity : FlutterActivity() {
             }
         } catch (_: Exception) {}
         return vista
+    }
+
+    private fun tieneAccesibilidad(): Boolean = try {
+        packageManager.getServiceInfo(ComponentName(this, ServicioBloqueo::class.java), 0)
+        true
+    } catch (_: Exception) { false }
+
+    /** "ok" si se apagó, "falta_permiso" si hay que activar el permiso. */
+    private fun bloquearPantalla(): String {
+        ServicioBloqueo.instancia?.let { if (it.bloquear()) return "ok" }
+        val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+        val admin = ComponentName(this, AdminBloqueo::class.java)
+        if (!tieneAccesibilidad() && dpm.isAdminActive(admin)) {
+            return try { dpm.lockNow(); "ok" } catch (_: Exception) { "falta_permiso" }
+        }
+        return if (tieneAccesibilidad()) "falta_accesibilidad" else "falta_permiso"
+    }
+
+    private fun pedirPermisoBloqueo() {
+        if (tieneAccesibilidad()) {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } else {
+            val i = Intent(android.app.admin.DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                .putExtra(android.app.admin.DevicePolicyManager.EXTRA_DEVICE_ADMIN, ComponentName(this, AdminBloqueo::class.java))
+                .putExtra(
+                    android.app.admin.DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                    "Solo se usa para apagar la pantalla con dos toques en el inicio."
+                )
+            startActivity(i)
+        }
     }
 
     private fun tienePermisoNotificaciones(): Boolean {

@@ -71,6 +71,7 @@ class Modelo extends ChangeNotifier {
 
   // Personalización
   String temaId = 'galaxia';
+  bool dobleToque = false;
   String navegacion =
       'letras'; // 'letras' (índice A–Z) o 'boton' (botón de apps)
   String estiloReloj = 'clasico';
@@ -99,6 +100,7 @@ class Modelo extends ChangeNotifier {
     tamTexto = p.getDouble('tamTexto') ?? 20;
     temaId = p.getString('temaId') ?? 'galaxia';
     navegacion = p.getString('navegacion') ?? 'letras';
+    dobleToque = p.getBool('dobleToque') ?? false;
     puntosNotificacion = p.getBool('puntosNotificacion') ?? true;
     estiloReloj = p.getString('estiloReloj') ?? 'clasico';
     relojAcento = p.getBool('relojAcento') ?? false;
@@ -357,6 +359,12 @@ class Modelo extends ChangeNotifier {
 
   void recrearWidgets() {
     generacionWidgets++;
+    notifyListeners();
+  }
+
+  void ponerDobleToque(bool v) {
+    dobleToque = v;
+    _s('dobleToque', v);
     notifyListeners();
   }
 

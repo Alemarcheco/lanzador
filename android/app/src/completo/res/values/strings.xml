@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desc_accesibilidad">Solo sirve para apagar la pantalla con dos toques en el inicio del Lanzador. No lee nada de lo que hay en la pantalla.</string>
+</resources>

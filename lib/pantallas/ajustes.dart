@@ -80,6 +80,23 @@ class PantallaAjustes extends StatelessWidget {
               'Forma, tamaño, blanco y negro y paquetes de iconos',
               PantallaIconos(modelo: m),
             ),
+            _titulo('Gestos'),
+            SwitchListTile(
+              secondary: const Icon(
+                Icons.touch_app_outlined,
+                color: Colors.white,
+              ),
+              title: const Text(
+                'Doble toque para apagar la pantalla',
+                style: _blanco,
+              ),
+              subtitle: const Text(
+                'Toca dos veces un espacio vacío del inicio. La primera vez te pedirá un permiso.',
+                style: _gris,
+              ),
+              value: m.dobleToque,
+              onChanged: m.ponerDobleToque,
+            ),
             _titulo('Notificaciones'),
             if (!m.notificacionesDisponibles)
               const ListTile(
