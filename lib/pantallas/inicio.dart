@@ -346,14 +346,7 @@ class _PantallaInicioState extends State<PantallaInicio>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: alto * 0.14),
-            Reloj(
-              modelo: m,
-              alMantener: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => PantallaReloj(modelo: m),
-                ),
-              ),
-            ),
+            Reloj(modelo: m),
             const SizedBox(height: 22),
             Expanded(
               child: AnimatedSwitcher(

@@ -263,7 +263,6 @@ class PantallaReloj extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Text(
-                'Consejo: mantén pulsado el reloj en la pantalla de inicio para volver aquí. '
                 'Los relojes de Samsung de la pantalla de bloqueo no se pueden usar fuera de Samsung, '
                 'pero también puedes añadir como widget cualquier reloj que tengas instalado.',
                 style: _gris,

@@ -181,9 +181,7 @@ class MainActivity : FlutterActivity() {
                         .getMethod("expandNotificationsPanel")
                         .invoke(servicio)
                 })
-                "reloj" -> resultado.success(intentar {
-                    startActivity(Intent(AlarmClock.ACTION_SHOW_ALARMS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                })
+                "reloj" -> resultado.success(abrirReloj())
                 "calendario" -> resultado.success(intentar {
                     startActivity(
                         Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR)
@@ -370,6 +368,24 @@ class MainActivity : FlutterActivity() {
             }
         } catch (_: Exception) {}
         return vista
+    }
+
+    /** Abre la app Reloj: primero la de Samsung/Google por nombre, luego la de alarmas genérica. */
+    private fun abrirReloj(): Boolean {
+        val paquetes = listOf(
+            "com.sec.android.app.clockpackage",
+            "com.google.android.deskclock",
+            "com.android.deskclock",
+            "com.miui.clock",
+            "com.oneplus.deskclock",
+        )
+        for (p in paquetes) {
+            val i = packageManager.getLaunchIntentForPackage(p) ?: continue
+            if (intentar { startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }) return true
+        }
+        return intentar {
+            startActivity(Intent(AlarmClock.ACTION_SHOW_ALARMS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
     }
 
     private fun tieneAccesibilidad(): Boolean = try {

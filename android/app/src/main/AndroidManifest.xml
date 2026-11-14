@@ -58,6 +58,12 @@
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.LAUNCHER"/>
         </intent>
+        <!-- Apps de reloj para abrirlas al tocar la hora -->
+        <package android:name="com.sec.android.app.clockpackage" />
+        <package android:name="com.google.android.deskclock" />
+        <package android:name="com.android.deskclock" />
+        <package android:name="com.miui.clock" />
+        <package android:name="com.oneplus.deskclock" />
         <!-- Paquetes de iconos de Play Store -->
         <intent><action android:name="org.adw.launcher.THEMES"/></intent>
         <intent><action android:name="com.novalauncher.THEME"/></intent>

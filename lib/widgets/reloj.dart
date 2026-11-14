@@ -284,6 +284,7 @@ class EstiloReloj extends StatelessWidget {
     }
     return GestureDetector(
       onLongPress: alMantener,
+      onTap: alTocarHora,
       child: SizedBox(
         width: double.infinity,
         child: Column(crossAxisAlignment: alin, children: [cuerpo]),
