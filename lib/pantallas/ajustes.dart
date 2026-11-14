@@ -47,6 +47,18 @@ class PantallaAjustes extends StatelessWidget {
               ),
             ),
             _titulo('Personalizar'),
+            ListTile(
+              leading: const Icon(Icons.apps_rounded, color: Colors.white),
+              title: const Text('Ver todas las apps con', style: _blanco),
+              subtitle: SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'letras', label: Text('Letras A–Z')),
+                  ButtonSegment(value: 'boton', label: Text('Botón')),
+                ],
+                selected: {m.navegacion},
+                onSelectionChanged: (v) => m.ponerNavegacion(v.first),
+              ),
+            ),
             _ir(
               context,
               Icons.palette_outlined,

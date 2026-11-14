@@ -4,9 +4,13 @@ import 'texto.dart';
 
 /// Una app instalada que se puede abrir.
 class AppInfo {
-  AppInfo({required this.paquete, required this.actividad, required this.nombre, String? nombreOriginal})
-      : letra = letraDe(nombre),
-        nombreOriginal = nombreOriginal ?? nombre;
+  AppInfo({
+    required this.paquete,
+    required this.actividad,
+    required this.nombre,
+    String? nombreOriginal,
+  }) : letra = letraDe(nombre),
+       nombreOriginal = nombreOriginal ?? nombre;
 
   final String paquete;
   final String actividad;
@@ -14,8 +18,12 @@ class AppInfo {
   final String nombreOriginal;
   final String letra;
 
-  AppInfo conNombre(String n) =>
-      AppInfo(paquete: paquete, actividad: actividad, nombre: n, nombreOriginal: nombreOriginal);
+  AppInfo conNombre(String n) => AppInfo(
+    paquete: paquete,
+    actividad: actividad,
+    nombre: n,
+    nombreOriginal: nombreOriginal,
+  );
 
   String get clave => '$paquete/$actividad';
 }
@@ -36,12 +44,12 @@ class PackIconos {
 /// Un tipo de widget que ofrece alguna app instalada.
 class ProveedorWidget {
   ProveedorWidget(Map<Object?, Object?> m)
-      : proveedor = m['proveedor'] as String,
-        nombre = m['nombre'] as String,
-        app = m['app'] as String,
-        paquete = m['paquete'] as String,
-        ancho = (m['ancho'] as num).toInt(),
-        alto = (m['alto'] as num).toInt();
+    : proveedor = m['proveedor'] as String,
+      nombre = m['nombre'] as String,
+      app = m['app'] as String,
+      paquete = m['paquete'] as String,
+      ancho = (m['ancho'] as num).toInt(),
+      alto = (m['alto'] as num).toInt();
 
   final String proveedor, nombre, app, paquete;
   final int ancho, alto; // tamaño mínimo en dp
@@ -70,7 +78,8 @@ class Plataforma {
   }
 
   static Future<List<AppInfo>> apps() async {
-    final lista = await _canal.invokeListMethod<Map<Object?, Object?>>('apps') ?? [];
+    final lista =
+        await _canal.invokeListMethod<Map<Object?, Object?>>('apps') ?? [];
     return [
       for (final m in lista)
         AppInfo(
@@ -99,14 +108,22 @@ class Plataforma {
 
   static Future<List<PackIconos>> packsIconos() async {
     try {
-      final l = await _canal.invokeListMethod<Map<Object?, Object?>>('packsIconos') ?? [];
-      return [for (final m in l) PackIconos(m['paquete'] as String, m['nombre'] as String)];
+      final l =
+          await _canal.invokeListMethod<Map<Object?, Object?>>('packsIconos') ??
+          [];
+      return [
+        for (final m in l)
+          PackIconos(m['paquete'] as String, m['nombre'] as String),
+      ];
     } catch (_) {
       return [];
     }
   }
 
-  static Future<void> _llamar(String metodo, [Map<String, Object?>? args]) async {
+  static Future<void> _llamar(
+    String metodo, [
+    Map<String, Object?>? args,
+  ]) async {
     try {
       await _canal.invokeMethod<bool>(metodo, args);
     } catch (_) {}
@@ -114,15 +131,18 @@ class Plataforma {
 
   static Future<void> abrir(AppInfo a) =>
       _llamar('abrir', {'paquete': a.paquete, 'actividad': a.actividad});
-  static Future<void> infoApp(AppInfo a) => _llamar('infoApp', {'paquete': a.paquete});
-  static Future<void> desinstalar(AppInfo a) => _llamar('desinstalar', {'paquete': a.paquete});
+  static Future<void> infoApp(AppInfo a) =>
+      _llamar('infoApp', {'paquete': a.paquete});
+  static Future<void> desinstalar(AppInfo a) =>
+      _llamar('desinstalar', {'paquete': a.paquete});
   static Future<void> panelNotificaciones() => _llamar('panelNotificaciones');
 
   static Map<String, int> _mapaConteo(Object? a) => {
-        if (a is Map)
-          for (final e in a.entries)
-            if (e.key is String && e.value is num) e.key as String: (e.value as num).toInt(),
-      };
+    if (a is Map)
+      for (final e in a.entries)
+        if (e.key is String && e.value is num)
+          e.key as String: (e.value as num).toInt(),
+  };
 
   static Future<Map<String, int>> notificaciones() async {
     try {
@@ -134,7 +154,8 @@ class Plataforma {
 
   static Future<bool> notificacionesDisponibles() async {
     try {
-      return await _canal.invokeMethod<bool>('notificacionesDisponibles') ?? false;
+      return await _canal.invokeMethod<bool>('notificacionesDisponibles') ??
+          false;
     } catch (_) {
       return false;
     }
@@ -158,13 +179,18 @@ class Plataforma {
 
   static Future<void> borrarError() => _llamar('borrarError');
 
-  static Future<void> pedirPermisoNotificaciones() => _llamar('pedirPermisoNotificaciones');
+  static Future<void> pedirPermisoNotificaciones() =>
+      _llamar('pedirPermisoNotificaciones');
   static Future<void> reloj() => _llamar('reloj');
   static Future<void> calendario() => _llamar('calendario');
   static Future<void> elegirFondo() => _llamar('fondo');
   static Future<List<ProveedorWidget>> proveedoresWidget() async {
     try {
-      final l = await _canal.invokeListMethod<Map<Object?, Object?>>('proveedoresWidget') ?? [];
+      final l =
+          await _canal.invokeListMethod<Map<Object?, Object?>>(
+            'proveedoresWidget',
+          ) ??
+          [];
       return [for (final m in l) ProveedorWidget(m)];
     } catch (_) {
       return [];
@@ -173,7 +199,9 @@ class Plataforma {
 
   static Future<Uint8List?> vistaPreviaWidget(String proveedor) async {
     try {
-      return await _canal.invokeMethod<Uint8List>('vistaPreviaWidget', {'proveedor': proveedor});
+      return await _canal.invokeMethod<Uint8List>('vistaPreviaWidget', {
+        'proveedor': proveedor,
+      });
     } catch (_) {
       return null;
     }
@@ -183,13 +211,17 @@ class Plataforma {
   /// devuelve {id, alto} o null si se canceló.
   static Future<Map<Object?, Object?>?> anadirWidget(String proveedor) async {
     try {
-      return await _canal.invokeMapMethod<Object?, Object?>('anadirWidget', {'proveedor': proveedor});
+      return await _canal.invokeMapMethod<Object?, Object?>('anadirWidget', {
+        'proveedor': proveedor,
+      });
     } catch (_) {
       return null;
     }
   }
 
-  static Future<void> quitarWidget(int id) => _llamar('quitarWidget', {'id': id});
+  static Future<void> quitarWidget(int id) =>
+      _llamar('quitarWidget', {'id': id});
 
-  static Future<void> launcherPredeterminado() => _llamar('launcherPredeterminado');
+  static Future<void> launcherPredeterminado() =>
+      _llamar('launcherPredeterminado');
 }

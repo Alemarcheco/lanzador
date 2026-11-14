@@ -13,8 +13,16 @@ const _favoritasIniciales = [
   ['com.facebook.katana'],
   ['com.spotify.music'],
   ['com.google.android.gm'],
-  ['com.google.android.dialer', 'com.samsung.android.dialer', 'com.android.dialer'],
-  ['com.google.android.calendar', 'com.samsung.android.calendar', 'com.android.calendar'],
+  [
+    'com.google.android.dialer',
+    'com.samsung.android.dialer',
+    'com.android.dialer',
+  ],
+  [
+    'com.google.android.calendar',
+    'com.samsung.android.calendar',
+    'com.android.calendar',
+  ],
   ['com.android.chrome'],
 ];
 
@@ -31,7 +39,10 @@ class WidgetColocado {
     final p = s.split(':');
     final id = int.tryParse(p.first);
     if (id == null) return null;
-    return WidgetColocado(id, p.length > 1 ? double.tryParse(p[1]) ?? 160 : 160);
+    return WidgetColocado(
+      id,
+      p.length > 1 ? double.tryParse(p[1]) ?? 160 : 160,
+    );
   }
 }
 
@@ -60,6 +71,8 @@ class Modelo extends ChangeNotifier {
 
   // Personalización
   String temaId = 'galaxia';
+  String navegacion =
+      'letras'; // 'letras' (índice A–Z) o 'boton' (botón de apps)
   String estiloReloj = 'clasico';
   bool relojAcento = false; // reloj con el color de acento del tema
   double escalaReloj = 1.0;
@@ -85,6 +98,7 @@ class Modelo extends ChangeNotifier {
     fondoGalaxia = p.getBool('fondoGalaxia') ?? false;
     tamTexto = p.getDouble('tamTexto') ?? 20;
     temaId = p.getString('temaId') ?? 'galaxia';
+    navegacion = p.getString('navegacion') ?? 'letras';
     puntosNotificacion = p.getBool('puntosNotificacion') ?? true;
     estiloReloj = p.getString('estiloReloj') ?? 'clasico';
     relojAcento = p.getBool('relojAcento') ?? false;
@@ -97,7 +111,8 @@ class Modelo extends ChangeNotifier {
     packIconos = p.getString('packIconos') ?? '';
     _nombres = {
       for (final linea in p.getStringList('nombres') ?? <String>[])
-        if (linea.contains('\t')) linea.split('\t').first: linea.split('\t').last,
+        if (linea.contains('\t'))
+          linea.split('\t').first: linea.split('\t').last,
     };
     widgets = (p.getStringList('widgets') ?? [])
         .map(WidgetColocado.leer)
@@ -142,7 +157,10 @@ class Modelo extends ChangeNotifier {
   void _aplicarNombres() {
     final lista = [
       for (final a in _appsSistema)
-        if (_nombres[a.clave] case final n? when n.trim().isNotEmpty) a.conNombre(n.trim()) else a,
+        if (_nombres[a.clave] case final n? when n.trim().isNotEmpty)
+          a.conNombre(n.trim())
+        else
+          a,
     ];
     lista.sort((a, b) => compararNombres(a.nombre, b.nombre));
     apps = lista;
@@ -155,7 +173,9 @@ class Modelo extends ChangeNotifier {
     } else {
       _nombres[a.clave] = n;
     }
-    _prefs?.setStringList('nombres', [for (final e in _nombres.entries) '${e.key}\t${e.value}']);
+    _prefs?.setStringList('nombres', [
+      for (final e in _nombres.entries) '${e.key}\t${e.value}',
+    ]);
     _aplicarNombres();
     notifyListeners();
   }
@@ -163,8 +183,10 @@ class Modelo extends ChangeNotifier {
   /// Fuerza a volver a pedir los iconos (por ejemplo tras actualizar una app).
   void olvidarIconos() => _iconos.clear();
 
-  Future<IconoDatos?> icono(AppInfo a) =>
-      _iconos.putIfAbsent('${a.clave}|$packIconos', () => Plataforma.icono(a, packIconos));
+  Future<IconoDatos?> icono(AppInfo a) => _iconos.putIfAbsent(
+    '${a.clave}|$packIconos',
+    () => Plataforma.icono(a, packIconos),
+  );
 
   AppInfo? _buscar(String clave) {
     for (final a in apps) {
@@ -192,7 +214,10 @@ class Modelo extends ChangeNotifier {
 
   void alternarFavorita(AppInfo a) {
     if (esFavorita(a)) {
-      _favoritos = favoritas.where((f) => f.clave != a.clave).map((f) => f.clave).toList();
+      _favoritos = favoritas
+          .where((f) => f.clave != a.clave)
+          .map((f) => f.clave)
+          .toList();
     } else {
       _favoritos = [...favoritas.map((f) => f.clave), a.clave];
     }
@@ -213,7 +238,8 @@ class Modelo extends ChangeNotifier {
 
   /// Letras que tienen al menos una app, en orden (A–Z y '#' al final).
   List<String> get letras {
-    final s = apps.map((a) => a.letra).toSet().toList()..sort((a, b) {
+    final s = apps.map((a) => a.letra).toSet().toList()
+      ..sort((a, b) {
         if (a == '#') return 1;
         if (b == '#') return -1;
         return a.compareTo(b);
@@ -221,7 +247,8 @@ class Modelo extends ChangeNotifier {
     return s;
   }
 
-  List<AppInfo> appsDeLetra(String letra) => apps.where((a) => a.letra == letra).toList();
+  List<AppInfo> appsDeLetra(String letra) =>
+      apps.where((a) => a.letra == letra).toList();
 
   List<AppInfo> buscar(String texto) {
     final t = normalizar(texto.trim());
@@ -241,8 +268,10 @@ class Modelo extends ChangeNotifier {
   // ---- Widgets ----
   static const altoMin = 60.0, altoMax = 600.0;
 
-  void _guardarWidgets() =>
-      _prefs?.setStringList('widgets', widgets.map((w) => w.toString()).toList());
+  void _guardarWidgets() => _prefs?.setStringList(
+    'widgets',
+    widgets.map((w) => w.toString()).toList(),
+  );
 
   void agregarWidget(int id, double alto) {
     widgets.add(WidgetColocado(id, alto.clamp(80, 400).toDouble()));
@@ -321,7 +350,8 @@ class Modelo extends ChangeNotifier {
   Future<void> comprobarPermisoNotificaciones() async {
     notificacionesDisponibles = await Plataforma.notificacionesDisponibles();
     permisoNotificaciones = await Plataforma.permisoNotificaciones();
-    if (permisoNotificaciones) notificaciones = await Plataforma.notificaciones();
+    if (permisoNotificaciones)
+      notificaciones = await Plataforma.notificaciones();
     notifyListeners();
   }
 
@@ -330,16 +360,71 @@ class Modelo extends ChangeNotifier {
     notifyListeners();
   }
 
-  void ponerTema(String v) { temaId = v; _s('temaId', v); notifyListeners(); }
-  void ponerEstiloReloj(String v) { estiloReloj = v; _s('estiloReloj', v); notifyListeners(); }
-  void ponerRelojAcento(bool v) { relojAcento = v; _s('relojAcento', v); notifyListeners(); }
-  void ponerEscalaReloj(double v) { escalaReloj = v; _s('escalaReloj', v); notifyListeners(); }
-  void ponerRelojCentrado(bool v) { relojCentrado = v; _s('relojCentrado', v); notifyListeners(); }
-  void ponerMostrarFecha(bool v) { mostrarFecha = v; _s('mostrarFecha', v); notifyListeners(); }
-  void ponerFormaIcono(String v) { formaIcono = v; _s('formaIcono', v); notifyListeners(); }
-  void ponerEscalaIcono(double v) { escalaIcono = v; _s('escalaIcono', v); notifyListeners(); }
-  void ponerIconosByN(bool v) { iconosByN = v; _s('iconosByN', v); notifyListeners(); }
-  void ponerPackIconos(String v) { packIconos = v; _s('packIconos', v); notifyListeners(); }
+  void ponerNavegacion(String v) {
+    navegacion = v;
+    _s('navegacion', v);
+    notifyListeners();
+  }
+
+  void ponerTema(String v) {
+    temaId = v;
+    _s('temaId', v);
+    notifyListeners();
+  }
+
+  void ponerEstiloReloj(String v) {
+    estiloReloj = v;
+    _s('estiloReloj', v);
+    notifyListeners();
+  }
+
+  void ponerRelojAcento(bool v) {
+    relojAcento = v;
+    _s('relojAcento', v);
+    notifyListeners();
+  }
+
+  void ponerEscalaReloj(double v) {
+    escalaReloj = v;
+    _s('escalaReloj', v);
+    notifyListeners();
+  }
+
+  void ponerRelojCentrado(bool v) {
+    relojCentrado = v;
+    _s('relojCentrado', v);
+    notifyListeners();
+  }
+
+  void ponerMostrarFecha(bool v) {
+    mostrarFecha = v;
+    _s('mostrarFecha', v);
+    notifyListeners();
+  }
+
+  void ponerFormaIcono(String v) {
+    formaIcono = v;
+    _s('formaIcono', v);
+    notifyListeners();
+  }
+
+  void ponerEscalaIcono(double v) {
+    escalaIcono = v;
+    _s('escalaIcono', v);
+    notifyListeners();
+  }
+
+  void ponerIconosByN(bool v) {
+    iconosByN = v;
+    _s('iconosByN', v);
+    notifyListeners();
+  }
+
+  void ponerPackIconos(String v) {
+    packIconos = v;
+    _s('packIconos', v);
+    notifyListeners();
+  }
 
   void ponerTamTexto(double v) {
     tamTexto = v;

@@ -25,13 +25,25 @@ Path caminoForma(String forma, Size s) {
     case 'cuadrado':
       return Path()..addRRect(RRect.fromRectAndRadius(r, rad(0.08)));
     case 'lagrima':
-      return Path()
-        ..addRRect(RRect.fromRectAndCorners(r,
-            topLeft: rad(0.5), bottomLeft: rad(0.5), bottomRight: rad(0.5), topRight: rad(0.12)));
+      return Path()..addRRect(
+        RRect.fromRectAndCorners(
+          r,
+          topLeft: rad(0.5),
+          bottomLeft: rad(0.5),
+          bottomRight: rad(0.5),
+          topRight: rad(0.12),
+        ),
+      );
     case 'hoja':
-      return Path()
-        ..addRRect(RRect.fromRectAndCorners(r,
-            topLeft: rad(0.5), bottomRight: rad(0.5), topRight: rad(0.1), bottomLeft: rad(0.1)));
+      return Path()..addRRect(
+        RRect.fromRectAndCorners(
+          r,
+          topLeft: rad(0.5),
+          bottomRight: rad(0.5),
+          topRight: rad(0.1),
+          bottomLeft: rad(0.1),
+        ),
+      );
     case 'squircle':
       // Superelipse |x|^4 + |y|^4 = 1
       final p = Path();
@@ -54,10 +66,26 @@ Path caminoForma(String forma, Size s) {
 }
 
 const _matrizByN = <double>[
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0, 0, 0, 1, 0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
 ];
 
 const filtroByN = ColorFilter.matrix(_matrizByN);

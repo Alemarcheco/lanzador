@@ -47,58 +47,59 @@ class _IndiceLetrasState extends State<IndiceLetras> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      final n = widget.letras.length;
-      const altoAjustes = 30.0;
-      final altoLetra = ((c.maxHeight - altoAjustes) / n).clamp(8.0, 30.0);
-      final fuente = (altoLetra * 0.92).clamp(8.0, 24.0);
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown: (d) => _elegirEn(d.localPosition.dy, altoLetra),
-            onTapUp: (_) => _soltar(),
-            onTapCancel: _soltar,
-            onVerticalDragStart: (d) => _elegirEn(d.localPosition.dy, altoLetra),
-            onVerticalDragUpdate: (d) => _elegirEn(d.localPosition.dy, altoLetra),
-            onVerticalDragEnd: (_) => _soltar(),
-            onVerticalDragCancel: _soltar,
-            child: SizedBox(
-              width: c.maxWidth,
-              height: altoLetra * n,
-              child: Column(
-                children: [
-                  for (var i = 0; i < n; i++)
-                    SizedBox(
-                      height: altoLetra,
-                      child: _letra(i, fuente),
-                    ),
-                ],
+    return LayoutBuilder(
+      builder: (context, c) {
+        final n = widget.letras.length;
+        const altoAjustes = 30.0;
+        final altoLetra = ((c.maxHeight - altoAjustes) / n).clamp(8.0, 30.0);
+        final fuente = (altoLetra * 0.92).clamp(8.0, 24.0);
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (d) => _elegirEn(d.localPosition.dy, altoLetra),
+              onTapUp: (_) => _soltar(),
+              onTapCancel: _soltar,
+              onVerticalDragStart: (d) =>
+                  _elegirEn(d.localPosition.dy, altoLetra),
+              onVerticalDragUpdate: (d) =>
+                  _elegirEn(d.localPosition.dy, altoLetra),
+              onVerticalDragEnd: (_) => _soltar(),
+              onVerticalDragCancel: _soltar,
+              child: SizedBox(
+                width: c.maxWidth,
+                height: altoLetra * n,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < n; i++)
+                      SizedBox(height: altoLetra, child: _letra(i, fuente)),
+                  ],
+                ),
               ),
             ),
-          ),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: widget.alAjustes,
-            child: SizedBox(
-              width: c.maxWidth,
-              height: altoAjustes,
-              child: Center(
-                child: Container(
-                  width: 9,
-                  height: 9,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: widget.tema.texto, width: 1.6),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.alAjustes,
+              child: SizedBox(
+                width: c.maxWidth,
+                height: altoAjustes,
+                child: Center(
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: widget.tema.texto, width: 1.6),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      },
+    );
   }
 
   Widget _letra(int i, double fuente) {
@@ -129,10 +130,12 @@ class _IndiceLetrasState extends State<IndiceLetras> {
           duration: const Duration(milliseconds: 90),
           scale: escala,
           child: esFav
-              ? Icon(Icons.star_outline_rounded,
+              ? Icon(
+                  Icons.star_outline_rounded,
                   color: elegida ? widget.tema.acento : widget.tema.texto,
                   size: fuente * 1.15,
-                  shadows: widget.tema.sombras)
+                  shadows: widget.tema.sombras,
+                )
               : Text(
                   letra,
                   style: TextStyle(

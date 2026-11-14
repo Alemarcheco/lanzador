@@ -5,7 +5,12 @@ import '../plataforma.dart';
 import 'forma_icono.dart';
 
 class IconoApp extends StatelessWidget {
-  const IconoApp({super.key, required this.app, required this.modelo, this.tam = 48});
+  const IconoApp({
+    super.key,
+    required this.app,
+    required this.modelo,
+    this.tam = 48,
+  });
 
   final AppInfo app;
   final Modelo modelo;
@@ -28,9 +33,13 @@ class IconoApp extends StatelessWidget {
             filterQuality: FilterQuality.medium,
           );
           if (!datos.dePack) {
-            img = ClipPath(clipper: RecorteIcono(modelo.formaIcono), child: img);
+            img = ClipPath(
+              clipper: RecorteIcono(modelo.formaIcono),
+              child: img,
+            );
           }
-          if (modelo.iconosByN) img = ColorFiltered(colorFilter: filtroByN, child: img);
+          if (modelo.iconosByN)
+            img = ColorFiltered(colorFilter: filtroByN, child: img);
           return img;
         },
       ),
@@ -55,7 +64,8 @@ class FilaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final tam = modelo.tamTexto;
     final tema = modelo.tema;
-    final icono = ((tam * 2.4).clamp(36.0, 64.0) * modelo.escalaIcono).toDouble();
+    final icono = ((tam * 2.4).clamp(36.0, 64.0) * modelo.escalaIcono)
+        .toDouble();
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: alAbrir,
@@ -76,7 +86,8 @@ class FilaApp extends StatelessWidget {
                 style: tema.estilo(tam),
               ),
             ),
-            if (modelo.puntosNotificacion && (modelo.notificaciones[app.paquete] ?? 0) > 0)
+            if (modelo.puntosNotificacion &&
+                (modelo.notificaciones[app.paquete] ?? 0) > 0)
               Padding(
                 // Punto en la esquina superior derecha del nombre.
                 padding: EdgeInsets.only(left: 4, bottom: tam * 0.9),
@@ -86,7 +97,12 @@ class FilaApp extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: tema.acento,
                     shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: tema.acento.withValues(alpha: 0.6), blurRadius: 6)],
+                    boxShadow: [
+                      BoxShadow(
+                        color: tema.acento.withValues(alpha: 0.6),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -113,16 +129,44 @@ Future<void> mostrarMenuApp(BuildContext context, AppInfo app, Modelo modelo) {
           const SizedBox(height: 12),
           ListTile(
             leading: IconoApp(app: app, modelo: modelo, tam: 40),
-            title: Text(app.nombre,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
-            subtitle: Text(app.paquete, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(
+              app.nombre,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              app.paquete,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
           ),
           const Divider(color: Colors.white12),
-          _opcion(ctx, fav ? Icons.star : Icons.star_border,
-              fav ? 'Quitar de favoritos' : 'Añadir a favoritos', () => modelo.alternarFavorita(app)),
-          _opcion(ctx, Icons.edit_outlined, 'Renombrar', () => _renombrar(context, app, modelo)),
-          _opcion(ctx, Icons.info_outline, 'Información de la app', () => Plataforma.infoApp(app)),
-          _opcion(ctx, Icons.delete_outline, 'Desinstalar', () => Plataforma.desinstalar(app)),
+          _opcion(
+            ctx,
+            fav ? Icons.star : Icons.star_border,
+            fav ? 'Quitar de favoritos' : 'Añadir a favoritos',
+            () => modelo.alternarFavorita(app),
+          ),
+          _opcion(
+            ctx,
+            Icons.edit_outlined,
+            'Renombrar',
+            () => _renombrar(context, app, modelo),
+          ),
+          _opcion(
+            ctx,
+            Icons.info_outline,
+            'Información de la app',
+            () => Plataforma.infoApp(app),
+          ),
+          _opcion(
+            ctx,
+            Icons.delete_outline,
+            'Desinstalar',
+            () => Plataforma.desinstalar(app),
+          ),
           const SizedBox(height: 8),
         ],
       ),
@@ -130,16 +174,25 @@ Future<void> mostrarMenuApp(BuildContext context, AppInfo app, Modelo modelo) {
   );
 }
 
-Widget _opcion(BuildContext ctx, IconData icono, String texto, VoidCallback accion) => ListTile(
-      leading: Icon(icono, color: Colors.white),
-      title: Text(texto, style: const TextStyle(color: Colors.white, fontSize: 16)),
-      onTap: () {
-        Navigator.pop(ctx);
-        accion();
-      },
-    );
+Widget _opcion(
+  BuildContext ctx,
+  IconData icono,
+  String texto,
+  VoidCallback accion,
+) => ListTile(
+  leading: Icon(icono, color: Colors.white),
+  title: Text(texto, style: const TextStyle(color: Colors.white, fontSize: 16)),
+  onTap: () {
+    Navigator.pop(ctx);
+    accion();
+  },
+);
 
-Future<void> _renombrar(BuildContext context, AppInfo app, Modelo modelo) async {
+Future<void> _renombrar(
+  BuildContext context,
+  AppInfo app,
+  Modelo modelo,
+) async {
   final ctrl = TextEditingController(text: app.nombre);
   final nuevo = await showDialog<String>(
     context: context,
@@ -148,13 +201,24 @@ Future<void> _renombrar(BuildContext context, AppInfo app, Modelo modelo) async 
       content: TextField(
         controller: ctrl,
         autofocus: true,
-        decoration: InputDecoration(helperText: 'Original: ${app.nombreOriginal}'),
+        decoration: InputDecoration(
+          helperText: 'Original: ${app.nombreOriginal}',
+        ),
         onSubmitted: (v) => Navigator.pop(ctx, v),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, app.nombreOriginal), child: const Text('Restaurar')),
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Guardar')),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, app.nombreOriginal),
+          child: const Text('Restaurar'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, ctrl.text),
+          child: const Text('Guardar'),
+        ),
       ],
     ),
   );

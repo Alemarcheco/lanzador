@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../modelo.dart';
+import '../temas.dart';
 import '../plataforma.dart';
 import '../widgets/fila_app.dart';
 import '../widgets/indice.dart';
@@ -87,9 +88,12 @@ class _PantallaInicioState extends State<PantallaInicio>
     Plataforma.abrir(a);
   }
 
-  void _abrirBuscar() {
-    Navigator.of(context)
-        .push(rutaTransparente(PantallaBuscar(modelo: m, alAbrir: _abrir)));
+  void _abrirBuscar({bool teclado = true}) {
+    Navigator.of(context).push(
+      rutaTransparente(
+        PantallaBuscar(modelo: m, alAbrir: _abrir, teclado: teclado),
+      ),
+    );
   }
 
   void _abrirAjustes() {
@@ -250,27 +254,41 @@ class _PantallaInicioState extends State<PantallaInicio>
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(child: _zonaPrincipal(context)),
-                          SizedBox(
-                            width: 46,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 12,
-                                top: 140,
-                              ),
-                              child: IndiceLetras(
-                                letras: letras,
-                                seleccion: _seleccion,
-                                alElegir: (l) => setState(() => _seleccion = l),
-                                alAjustes: _abrirAjustes,
-                                tema: m.tema,
+                          if (m.navegacion == 'letras')
+                            SizedBox(
+                              width: 46,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: 12,
+                                  top: 140,
+                                ),
+                                child: IndiceLetras(
+                                  letras: letras,
+                                  seleccion: _seleccion,
+                                  alElegir: (l) =>
+                                      setState(() => _seleccion = l),
+                                  alAjustes: _abrirAjustes,
+                                  tema: m.tema,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
+                if (m.navegacion == 'boton')
+                  Positioned(
+                    right: 20,
+                    bottom: 20 + MediaQuery.paddingOf(context).bottom,
+                    child: FadeTransition(
+                      opacity: _curva,
+                      child: _BotonApps(
+                        tema: m.tema,
+                        alTocar: () => _abrirBuscar(teclado: false),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -383,3 +401,35 @@ Route<void> rutaTransparente(Widget pantalla) => PageRouteBuilder<void>(
     ),
   ),
 );
+
+/// Botón redondo de la esquina inferior derecha que abre todas las apps.
+class _BotonApps extends StatelessWidget {
+  const _BotonApps({required this.tema, required this.alTocar});
+
+  final Tema tema;
+  final VoidCallback alTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0x55000000),
+      shape: CircleBorder(
+        side: BorderSide(color: tema.texto.withValues(alpha: 0.7), width: 1.5),
+      ),
+      elevation: 0,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: alTocar,
+        child: SizedBox.square(
+          dimension: 60,
+          child: Icon(
+            Icons.apps_rounded,
+            size: 30,
+            color: tema.texto,
+            shadows: tema.sombras,
+          ),
+        ),
+      ),
+    );
+  }
+}

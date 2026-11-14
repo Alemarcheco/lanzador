@@ -2,12 +2,31 @@
 library;
 
 const _sinAcento = {
-  'Á': 'A', 'À': 'A', 'Â': 'A', 'Ä': 'A', 'Ã': 'A', 'Å': 'A',
-  'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
-  'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
-  'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Ö': 'O', 'Õ': 'O',
-  'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
-  'Ñ': 'N', 'Ç': 'C',
+  'Á': 'A',
+  'À': 'A',
+  'Â': 'A',
+  'Ä': 'A',
+  'Ã': 'A',
+  'Å': 'A',
+  'É': 'E',
+  'È': 'E',
+  'Ê': 'E',
+  'Ë': 'E',
+  'Í': 'I',
+  'Ì': 'I',
+  'Î': 'I',
+  'Ï': 'I',
+  'Ó': 'O',
+  'Ò': 'O',
+  'Ô': 'O',
+  'Ö': 'O',
+  'Õ': 'O',
+  'Ú': 'U',
+  'Ù': 'U',
+  'Û': 'U',
+  'Ü': 'U',
+  'Ñ': 'N',
+  'Ç': 'C',
 };
 
 /// Quita acentos y pasa a mayúsculas (para ordenar y buscar).
@@ -40,8 +59,18 @@ int compararNombres(String a, String b) {
 
 const _dias = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 const _meses = [
-  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-  'jul', 'ago', 'sept', 'oct', 'nov', 'dic',
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sept',
+  'oct',
+  'nov',
+  'dic',
 ];
 
 /// "mar, 10 de nov"
@@ -57,10 +86,36 @@ String horaTexto(DateTime d, {bool formato24 = true}) {
 }
 
 const _unidades = [
-  'cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
-  'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete',
-  'dieciocho', 'diecinueve', 'veinte', 'veintiuno', 'veintidós', 'veintitrés',
-  'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve',
+  'cero',
+  'uno',
+  'dos',
+  'tres',
+  'cuatro',
+  'cinco',
+  'seis',
+  'siete',
+  'ocho',
+  'nueve',
+  'diez',
+  'once',
+  'doce',
+  'trece',
+  'catorce',
+  'quince',
+  'dieciséis',
+  'diecisiete',
+  'dieciocho',
+  'diecinueve',
+  'veinte',
+  'veintiuno',
+  'veintidós',
+  'veintitrés',
+  'veinticuatro',
+  'veinticinco',
+  'veintiséis',
+  'veintisiete',
+  'veintiocho',
+  'veintinueve',
 ];
 const _decenas = {30: 'treinta', 40: 'cuarenta', 50: 'cincuenta'};
 

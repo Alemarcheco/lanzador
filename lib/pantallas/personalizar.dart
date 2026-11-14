@@ -19,17 +19,23 @@ const _cielo = BoxDecoration(
 );
 
 AppBar _barra(String t) => AppBar(
-      backgroundColor: Colors.transparent,
-      foregroundColor: Colors.white,
-      title: Text(t),
-    );
+  backgroundColor: Colors.transparent,
+  foregroundColor: Colors.white,
+  title: Text(t),
+);
 
 Widget _titulo(String t) => Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-      child: Text(t.toUpperCase(),
-          style: const TextStyle(
-              color: Color(0xFFFFD54F), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-    );
+  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+  child: Text(
+    t.toUpperCase(),
+    style: const TextStyle(
+      color: Color(0xFFFFD54F),
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 1.2,
+    ),
+  ),
+);
 
 /// Elegir tema: tarjetas con una muestra de cada uno.
 class PantallaTemas extends StatelessWidget {
@@ -62,35 +68,58 @@ class PantallaTemas extends StatelessWidget {
                 padding: const EdgeInsets.all(14),
                 decoration: _cielo.copyWith(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: elegido ? t.acento : Colors.white12, width: elegido ? 3 : 1),
+                  border: Border.all(
+                    color: elegido ? t.acento : Colors.white12,
+                    width: elegido ? 3 : 1,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('8:17', style: t.estilo(40, peso: FontWeight.w500, altura: 1)),
+                    Text(
+                      '8:17',
+                      style: t.estilo(40, peso: FontWeight.w500, altura: 1),
+                    ),
                     Text('vie, 13 de nov', style: t.estilo(12)),
                     const SizedBox(height: 10),
-                    for (final (n, c) in [('WhatsApp', const Color(0xFF25D366)), ('Spotify', const Color(0xFF1DB954)), ('Chrome', const Color(0xFF4285F4))])
+                    for (final (n, c) in [
+                      ('WhatsApp', const Color(0xFF25D366)),
+                      ('Spotify', const Color(0xFF1DB954)),
+                      ('Chrome', const Color(0xFF4285F4)),
+                    ])
                       Padding(
                         padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(children: [
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(5)),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(n, style: t.estilo(13)),
-                        ]),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: c,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(n, style: t.estilo(13)),
+                          ],
+                        ),
                       ),
                     const Spacer(),
-                    Row(children: [
-                      Expanded(
-                        child: Text(t.nombre,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                      ),
-                      if (elegido) Icon(Icons.check_circle, color: t.acento, size: 20),
-                    ]),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            t.nombre,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        if (elegido)
+                          Icon(Icons.check_circle, color: t.acento, size: 20),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -123,7 +152,9 @@ class PantallaReloj extends StatelessWidget {
             Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(20),
-              decoration: _cielo.copyWith(borderRadius: BorderRadius.circular(20)),
+              decoration: _cielo.copyWith(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Reloj(modelo: m, horaFija: hora),
             ),
             _titulo('Estilo'),
@@ -143,7 +174,9 @@ class PantallaReloj extends StatelessWidget {
                         decoration: _cielo.copyWith(
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: e.key == m.estiloReloj ? m.tema.acento : Colors.white12,
+                            color: e.key == m.estiloReloj
+                                ? m.tema.acento
+                                : Colors.white12,
                             width: e.key == m.estiloReloj ? 3 : 1,
                           ),
                         ),
@@ -166,7 +199,13 @@ class PantallaReloj extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Text(e.value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            Text(
+                              e.value,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -188,14 +227,23 @@ class PantallaReloj extends StatelessWidget {
               ),
             ),
             SwitchListTile(
-              secondary: const Icon(Icons.color_lens_outlined, color: Colors.white),
+              secondary: const Icon(
+                Icons.color_lens_outlined,
+                color: Colors.white,
+              ),
               title: const Text('Color de acento del tema', style: _blanco),
-              subtitle: const Text('Si está apagado se usa el color del texto', style: _gris),
+              subtitle: const Text(
+                'Si está apagado se usa el color del texto',
+                style: _gris,
+              ),
               value: m.relojAcento,
               onChanged: m.ponerRelojAcento,
             ),
             SwitchListTile(
-              secondary: const Icon(Icons.format_align_center, color: Colors.white),
+              secondary: const Icon(
+                Icons.format_align_center,
+                color: Colors.white,
+              ),
               title: const Text('Reloj centrado', style: _blanco),
               value: m.relojCentrado,
               onChanged: m.ponerRelojCentrado,
@@ -256,7 +304,9 @@ class _PantallaIconosState extends State<PantallaIconos> {
       builder: (context, _) {
         final muestra = m.favoritas.take(4).toList();
         if (muestra.length < 4) {
-          muestra.addAll(m.apps.where((a) => !muestra.contains(a)).take(4 - muestra.length));
+          muestra.addAll(
+            m.apps.where((a) => !muestra.contains(a)).take(4 - muestra.length),
+          );
         }
         return Scaffold(
           backgroundColor: _fondo,
@@ -266,11 +316,19 @@ class _PantallaIconosState extends State<PantallaIconos> {
             children: [
               Container(
                 margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-                decoration: _cielo.copyWith(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 12,
+                ),
+                decoration: _cielo.copyWith(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [for (final a in muestra) IconoApp(app: a, modelo: m, tam: 56 * m.escalaIcono)],
+                  children: [
+                    for (final a in muestra)
+                      IconoApp(app: a, modelo: m, tam: 56 * m.escalaIcono),
+                  ],
                 ),
               ),
               _titulo('Forma'),
@@ -283,37 +341,55 @@ class _PantallaIconosState extends State<PantallaIconos> {
                     for (final f in formasIcono.entries)
                       GestureDetector(
                         onTap: () => m.ponerFormaIcono(f.key),
-                        child: Column(children: [
-                          Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: f.key == m.formaIcono ? m.tema.acento : Colors.transparent,
-                                width: 2.5,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: f.key == m.formaIcono
+                                      ? m.tema.acento
+                                      : Colors.transparent,
+                                  width: 2.5,
+                                ),
                               ),
-                            ),
-                            child: ClipPath(
-                              clipper: RecorteIcono(f.key),
-                              child: Container(
-                                width: 48,
-                                height: 48,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(colors: [Color(0xFF5C7CFA), Color(0xFFB04DFF)]),
+                              child: ClipPath(
+                                clipper: RecorteIcono(f.key),
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF5C7CFA),
+                                        Color(0xFFB04DFF),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(f.value, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                        ]),
+                            const SizedBox(height: 4),
+                            Text(
+                              f.value,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                   ],
                 ),
               ),
               _titulo('Ajustes'),
               ListTile(
-                leading: const Icon(Icons.photo_size_select_small, color: Colors.white),
+                leading: const Icon(
+                  Icons.photo_size_select_small,
+                  color: Colors.white,
+                ),
                 title: const Text('Tamaño de los iconos', style: _blanco),
                 subtitle: Slider(
                   value: m.escalaIcono,
@@ -325,7 +401,10 @@ class _PantallaIconosState extends State<PantallaIconos> {
                 ),
               ),
               SwitchListTile(
-                secondary: const Icon(Icons.filter_b_and_w, color: Colors.white),
+                secondary: const Icon(
+                  Icons.filter_b_and_w,
+                  color: Colors.white,
+                ),
                 title: const Text('Iconos en blanco y negro', style: _blanco),
                 value: m.iconosByN,
                 onChanged: m.ponerIconosByN,
@@ -333,7 +412,10 @@ class _PantallaIconosState extends State<PantallaIconos> {
               SwitchListTile(
                 secondary: const Icon(Icons.apps, color: Colors.white),
                 title: const Text('Mostrar iconos', style: _blanco),
-                subtitle: const Text('Apágalo para ver solo los nombres', style: _gris),
+                subtitle: const Text(
+                  'Apágalo para ver solo los nombres',
+                  style: _gris,
+                ),
                 value: m.mostrarIconos,
                 onChanged: m.ponerMostrarIconos,
               ),
@@ -341,14 +423,19 @@ class _PantallaIconosState extends State<PantallaIconos> {
               RadioGroup<String>(
                 groupValue: m.packIconos,
                 onChanged: (v) => m.ponerPackIconos(v ?? ''),
-                child: Column(children: [
-                  const RadioListTile<String>(
-                    value: '',
-                    title: Text('Iconos del sistema', style: _blanco),
-                  ),
-                  for (final p in _packs ?? <PackIconos>[])
-                    RadioListTile<String>(value: p.paquete, title: Text(p.nombre, style: _blanco)),
-                ]),
+                child: Column(
+                  children: [
+                    const RadioListTile<String>(
+                      value: '',
+                      title: Text('Iconos del sistema', style: _blanco),
+                    ),
+                    for (final p in _packs ?? <PackIconos>[])
+                      RadioListTile<String>(
+                        value: p.paquete,
+                        title: Text(p.nombre, style: _blanco),
+                      ),
+                  ],
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -356,8 +443,8 @@ class _PantallaIconosState extends State<PantallaIconos> {
                   _packs == null
                       ? 'Buscando paquetes de iconos…'
                       : 'Instala paquetes de iconos desde Play Store (busca "icon pack", por ejemplo '
-                          'los compatibles con Nova o ADW) y aparecerán aquí. Las apps que el paquete '
-                          'no tenga conservan su icono normal.',
+                            'los compatibles con Nova o ADW) y aparecerán aquí. Las apps que el paquete '
+                            'no tenga conservan su icono normal.',
                   style: _gris,
                 ),
               ),

@@ -6,7 +6,15 @@ import '../widgets/fila_app.dart';
 
 /// Todas las apps con buscador (deslizar hacia arriba en el inicio).
 class PantallaBuscar extends StatefulWidget {
-  const PantallaBuscar({super.key, required this.modelo, required this.alAbrir});
+  const PantallaBuscar({
+    super.key,
+    required this.modelo,
+    required this.alAbrir,
+    this.teclado = true,
+  });
+
+  /// Abrir el teclado al entrar (al deslizar sí; con el botón de apps no).
+  final bool teclado;
 
   final Modelo modelo;
   final ValueChanged<AppInfo> alAbrir;
@@ -38,7 +46,7 @@ class _PantallaBuscarState extends State<PantallaBuscar> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                   child: TextField(
-                    autofocus: true,
+                    autofocus: widget.teclado,
                     style: const TextStyle(color: Colors.white, fontSize: 18),
                     cursorColor: Colors.white,
                     textInputAction: TextInputAction.go,
@@ -49,7 +57,10 @@ class _PantallaBuscarState extends State<PantallaBuscar> {
                     decoration: InputDecoration(
                       hintText: 'Buscar aplicaciones',
                       hintStyle: const TextStyle(color: Colors.white54),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white70,
+                      ),
                       filled: true,
                       fillColor: const Color(0x22FFFFFF),
                       border: OutlineInputBorder(
@@ -62,10 +73,14 @@ class _PantallaBuscarState extends State<PantallaBuscar> {
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(28, 8, 20, 24),
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     itemCount: lista.length,
-                    itemBuilder: (_, i) =>
-                        FilaApp(app: lista[i], modelo: m, alAbrir: () => _abrir(lista[i])),
+                    itemBuilder: (_, i) => FilaApp(
+                      app: lista[i],
+                      modelo: m,
+                      alAbrir: () => _abrir(lista[i]),
+                    ),
                   ),
                 ),
               ],

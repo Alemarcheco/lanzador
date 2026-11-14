@@ -47,7 +47,8 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
     setState(() => _ocupado = false);
     if (r == null || r['id'] == null) {
       final motivo = r?['error'] as String? ?? 'No se pudo añadir el widget';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(motivo)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(motivo)));
       return;
     }
     final id = (r['id'] as num).toInt();
@@ -63,11 +64,13 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
     final visibles = grupos == null
         ? <MapEntry<String, List<ProveedorWidget>>>[]
         : grupos.entries
-            .where((e) =>
-                t.isEmpty ||
-                normalizar(e.key).contains(t) ||
-                e.value.any((p) => normalizar(p.nombre).contains(t)))
-            .toList();
+              .where(
+                (e) =>
+                    t.isEmpty ||
+                    normalizar(e.key).contains(t) ||
+                    e.value.any((p) => normalizar(p.nombre).contains(t)),
+              )
+              .toList();
     return Scaffold(
       backgroundColor: const Color(0xFF101420),
       appBar: AppBar(
@@ -89,7 +92,12 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
           if (grupos == null)
             const Center(child: CircularProgressIndicator())
           else if (visibles.isEmpty)
-            const Center(child: Text('No hay widgets', style: TextStyle(color: Colors.white60)))
+            const Center(
+              child: Text(
+                'No hay widgets',
+                style: TextStyle(color: Colors.white60),
+              ),
+            )
           else
             ListView(
               padding: const EdgeInsets.only(bottom: 32),
@@ -98,10 +106,18 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
                   ExpansionTile(
                     iconColor: Colors.white,
                     collapsedIconColor: Colors.white70,
-                    title: Text(e.key,
-                        style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
-                    subtitle: Text('${e.value.length} widget${e.value.length == 1 ? '' : 's'}',
-                        style: const TextStyle(color: Colors.white54)),
+                    title: Text(
+                      e.key,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${e.value.length} widget${e.value.length == 1 ? '' : 's'}',
+                      style: const TextStyle(color: Colors.white54),
+                    ),
                     children: [for (final p in e.value) _tarjeta(p)],
                   ),
               ],
@@ -129,7 +145,10 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 180),
               child: FutureBuilder<Uint8List?>(
-                future: _vistas.putIfAbsent(p.proveedor, () => Plataforma.vistaPreviaWidget(p.proveedor)),
+                future: _vistas.putIfAbsent(
+                  p.proveedor,
+                  () => Plataforma.vistaPreviaWidget(p.proveedor),
+                ),
                 builder: (_, s) => s.data == null
                     ? const SizedBox(height: 60)
                     : ClipRRect(
@@ -139,9 +158,18 @@ class _PantallaElegirWidgetState extends State<PantallaElegirWidget> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(p.nombre, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
-            Text('$celdasAncho × $celdasAlto · toca para añadir',
-                style: const TextStyle(color: Colors.white54, fontSize: 12)),
+            Text(
+              p.nombre,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              '$celdasAncho × $celdasAlto · toca para añadir',
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
           ],
         ),
       ),

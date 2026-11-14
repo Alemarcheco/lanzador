@@ -11,7 +11,12 @@ import '../texto.dart';
 /// Reloj de la pantalla de inicio en el estilo elegido.
 /// Tocar la hora abre las alarmas y tocar la fecha abre el calendario.
 class Reloj extends StatefulWidget {
-  const Reloj({super.key, required this.modelo, this.alMantener, this.horaFija});
+  const Reloj({
+    super.key,
+    required this.modelo,
+    this.alMantener,
+    this.horaFija,
+  });
 
   final Modelo modelo;
   final VoidCallback? alMantener;
@@ -37,7 +42,13 @@ class _RelojState extends State<Reloj> with WidgetsBindingObserver {
   void _programar() {
     _temporizador?.cancel();
     final ahora = DateTime.now();
-    final siguiente = DateTime(ahora.year, ahora.month, ahora.day, ahora.hour, ahora.minute + 1);
+    final siguiente = DateTime(
+      ahora.year,
+      ahora.month,
+      ahora.day,
+      ahora.hour,
+      ahora.minute + 1,
+    );
     _temporizador = Timer(siguiente.difference(ahora), () {
       if (!mounted) return;
       setState(() => _ahora = DateTime.now());
@@ -107,22 +118,30 @@ class EstiloReloj extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = acento ? tema.acento : tema.texto;
     final e = escala;
-    final alin = centrado ? CrossAxisAlignment.center : CrossAxisAlignment.start;
+    final alin = centrado
+        ? CrossAxisAlignment.center
+        : CrossAxisAlignment.start;
     final alinTexto = centrado ? TextAlign.center : TextAlign.left;
     final h = horaTexto(hora, formato24: formato24);
     final textoFecha = fechaCorta(hora);
 
     Widget fechaW(double tam) => GestureDetector(
-          onTap: alTocarFecha,
-          child: Text(textoFecha, style: tema.estilo(tam * e, peso: FontWeight.w600)),
-        );
+      onTap: alTocarFecha,
+      child: Text(
+        textoFecha,
+        style: tema.estilo(tam * e, peso: FontWeight.w600),
+      ),
+    );
 
     Widget cuerpo;
     switch (estilo) {
       case 'apilado':
         final hh = formato24
             ? hora.hour.toString().padLeft(2, '0')
-            : (hora.hour % 12 == 0 ? 12 : hora.hour % 12).toString().padLeft(2, '0');
+            : (hora.hour % 12 == 0 ? 12 : hora.hour % 12).toString().padLeft(
+                2,
+                '0',
+              );
         final mm = hora.minute.toString().padLeft(2, '0');
         final st = TextStyle(
           fontFamily: 'BebasNeue',
@@ -131,21 +150,35 @@ class EstiloReloj extends StatelessWidget {
           color: color,
           shadows: tema.sombras,
         );
-        cuerpo = Column(crossAxisAlignment: alin, children: [
-          GestureDetector(
-            onTap: alTocarHora,
-            child: Column(crossAxisAlignment: alin, children: [
-              Text(hh, style: st),
-              Text(mm, style: st.copyWith(color: acento ? tema.texto : tema.acento)),
-            ]),
-          ),
-          if (fecha) ...[const SizedBox(height: 10), fechaW(20)],
-        ]);
+        cuerpo = Column(
+          crossAxisAlignment: alin,
+          children: [
+            GestureDetector(
+              onTap: alTocarHora,
+              child: Column(
+                crossAxisAlignment: alin,
+                children: [
+                  Text(hh, style: st),
+                  Text(
+                    mm,
+                    style: st.copyWith(
+                      color: acento ? tema.texto : tema.acento,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (fecha) ...[const SizedBox(height: 10), fechaW(20)],
+          ],
+        );
       case 'fino':
-        cuerpo = Column(crossAxisAlignment: alin, children: [
-          GestureDetector(
-            onTap: alTocarHora,
-            child: Text(h,
+        cuerpo = Column(
+          crossAxisAlignment: alin,
+          children: [
+            GestureDetector(
+              onTap: alTocarHora,
+              child: Text(
+                h,
                 style: TextStyle(
                   fontFamily: 'Outfit',
                   fontWeight: FontWeight.w200,
@@ -154,16 +187,21 @@ class EstiloReloj extends StatelessWidget {
                   letterSpacing: -2,
                   color: color,
                   shadows: tema.sombras,
-                )),
-          ),
-          if (fecha) ...[const SizedBox(height: 4), fechaW(20)],
-        ]);
+                ),
+              ),
+            ),
+            if (fecha) ...[const SizedBox(height: 4), fechaW(20)],
+          ],
+        );
       case 'neon':
         final brillo = acento ? tema.texto : tema.acento;
-        cuerpo = Column(crossAxisAlignment: alin, children: [
-          GestureDetector(
-            onTap: alTocarHora,
-            child: Text(h,
+        cuerpo = Column(
+          crossAxisAlignment: alin,
+          children: [
+            GestureDetector(
+              onTap: alTocarHora,
+              child: Text(
+                h,
                 style: TextStyle(
                   fontFamily: 'Orbitron',
                   fontWeight: FontWeight.w700,
@@ -175,47 +213,74 @@ class EstiloReloj extends StatelessWidget {
                     Shadow(blurRadius: 10, color: brillo),
                     Shadow(blurRadius: 3, color: brillo),
                   ],
-                )),
-          ),
-          if (fecha) ...[const SizedBox(height: 8), fechaW(18)],
-        ]);
+                ),
+              ),
+            ),
+            if (fecha) ...[const SizedBox(height: 8), fechaW(18)],
+          ],
+        );
       case 'analogico':
         final lado = 170 * e;
-        cuerpo = Column(crossAxisAlignment: alin, children: [
-          GestureDetector(
-            onTap: alTocarHora,
-            child: SizedBox.square(
-              dimension: lado,
-              child: CustomPaint(painter: _Esfera(hora, color, tema.acento)),
+        cuerpo = Column(
+          crossAxisAlignment: alin,
+          children: [
+            GestureDetector(
+              onTap: alTocarHora,
+              child: SizedBox.square(
+                dimension: lado,
+                child: CustomPaint(painter: _Esfera(hora, color, tema.acento)),
+              ),
             ),
-          ),
-          if (fecha) ...[const SizedBox(height: 10), fechaW(20)],
-        ]);
+            if (fecha) ...[const SizedBox(height: 10), fechaW(20)],
+          ],
+        );
       case 'palabras':
-        cuerpo = Column(crossAxisAlignment: alin, children: [
-          GestureDetector(
-            onTap: alTocarHora,
-            child: Text(horaEnPalabras(hora),
+        cuerpo = Column(
+          crossAxisAlignment: alin,
+          children: [
+            GestureDetector(
+              onTap: alTocarHora,
+              child: Text(
+                horaEnPalabras(hora),
                 textAlign: alinTexto,
-                style: tema.estilo(40 * e, color: color, peso: FontWeight.w700, altura: 1.1)),
-          ),
-          if (fecha) ...[const SizedBox(height: 10), fechaW(20)],
-        ]);
+                style: tema.estilo(
+                  40 * e,
+                  color: color,
+                  peso: FontWeight.w700,
+                  altura: 1.1,
+                ),
+              ),
+            ),
+            if (fecha) ...[const SizedBox(height: 10), fechaW(20)],
+          ],
+        );
       case 'minimo':
         cuerpo = GestureDetector(
           onTap: alTocarHora,
-          child: Text(fecha ? '$h  ·  $textoFecha' : h,
-              style: tema.estilo(28 * e, color: color, peso: FontWeight.w600)),
+          child: Text(
+            fecha ? '$h  ·  $textoFecha' : h,
+            style: tema.estilo(28 * e, color: color, peso: FontWeight.w600),
+          ),
         );
       default: // clásico
-        cuerpo = Column(crossAxisAlignment: alin, children: [
-          GestureDetector(
-            onTap: alTocarHora,
-            child: Text(h,
-                style: tema.estilo(76 * e, color: color, peso: FontWeight.w500, altura: 1)),
-          ),
-          if (fecha) ...[const SizedBox(height: 6), fechaW(22)],
-        ]);
+        cuerpo = Column(
+          crossAxisAlignment: alin,
+          children: [
+            GestureDetector(
+              onTap: alTocarHora,
+              child: Text(
+                h,
+                style: tema.estilo(
+                  76 * e,
+                  color: color,
+                  peso: FontWeight.w500,
+                  altura: 1,
+                ),
+              ),
+            ),
+            if (fecha) ...[const SizedBox(height: 6), fechaW(22)],
+          ],
+        );
     }
     return GestureDetector(
       onLongPress: alMantener,
@@ -240,7 +305,13 @@ class _Esfera extends CustomPainter {
     final sombra = Paint()
       ..color = const Color(0x55000000)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-    canvas.drawCircle(c, r - 2, sombra..style = PaintingStyle.stroke..strokeWidth = 4);
+    canvas.drawCircle(
+      c,
+      r - 2,
+      sombra
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4,
+    );
     final borde = Paint()
       ..color = color.withValues(alpha: 0.85)
       ..style = PaintingStyle.stroke
@@ -251,22 +322,34 @@ class _Esfera extends CustomPainter {
       final largo = i % 3 == 0 ? 0.16 : 0.08;
       final p1 = c + Offset(math.sin(a), -math.cos(a)) * (r * 0.9);
       final p2 = c + Offset(math.sin(a), -math.cos(a)) * (r * (0.9 - largo));
-      canvas.drawLine(p1, p2, Paint()
-        ..color = color
-        ..strokeWidth = i % 3 == 0 ? 3 : 1.5
-        ..strokeCap = StrokeCap.round);
+      canvas.drawLine(
+        p1,
+        p2,
+        Paint()
+          ..color = color
+          ..strokeWidth = i % 3 == 0 ? 3 : 1.5
+          ..strokeCap = StrokeCap.round,
+      );
     }
     void aguja(double ang, double largo, double grosor, Color col) {
       final fin = c + Offset(math.sin(ang), -math.cos(ang)) * (r * largo);
-      canvas.drawLine(c, fin, Paint()
-        ..color = const Color(0x66000000)
-        ..strokeWidth = grosor + 2
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3));
-      canvas.drawLine(c, fin, Paint()
-        ..color = col
-        ..strokeWidth = grosor
-        ..strokeCap = StrokeCap.round);
+      canvas.drawLine(
+        c,
+        fin,
+        Paint()
+          ..color = const Color(0x66000000)
+          ..strokeWidth = grosor + 2
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      );
+      canvas.drawLine(
+        c,
+        fin,
+        Paint()
+          ..color = col
+          ..strokeWidth = grosor
+          ..strokeCap = StrokeCap.round,
+      );
     }
 
     final min = hora.minute;
@@ -277,5 +360,6 @@ class _Esfera extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_Esfera o) => o.hora != hora || o.color != color || o.acento != acento;
+  bool shouldRepaint(_Esfera o) =>
+      o.hora != hora || o.color != color || o.acento != acento;
 }
