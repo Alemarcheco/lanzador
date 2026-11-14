@@ -126,7 +126,7 @@ class _IndiceLetrasState extends State<IndiceLetras> {
           duration: const Duration(milliseconds: 90),
           scale: escala,
           child: esFav
-              ? Icon(elegida ? Icons.star_rounded : Icons.star_outline_rounded,
+              ? Icon(Icons.star_outline_rounded,
                   color: Colors.white, size: fuente * 1.15, shadows: sombraTexto)
               : Text(
                   letra,
@@ -134,7 +134,7 @@ class _IndiceLetrasState extends State<IndiceLetras> {
                     color: elegida ? const Color(0xFFFFD54F) : Colors.white,
                     fontSize: fuente,
                     height: 1,
-                    fontWeight: elegida ? FontWeight.w900 : FontWeight.w700,
+                    fontWeight: elegida ? FontWeight.w700 : FontWeight.w600,
                     shadows: sombraTexto,
                   ),
                 ),

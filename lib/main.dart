@@ -36,6 +36,7 @@ class Lanzador extends StatelessWidget {
         brightness: Brightness.dark,
         colorSchemeSeed: const Color(0xFF5C7CFA),
         useMaterial3: true,
+        fontFamily: 'Nunito',
         scaffoldBackgroundColor: Colors.transparent,
       ),
       home: PantallaInicio(modelo: modelo, navegador: _navegador),

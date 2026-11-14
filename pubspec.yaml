@@ -59,6 +59,17 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Fuente Nunito (licencia SIL OFL, ver assets/fuentes/OFL.txt)
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fuentes/Nunito-500.ttf
+          weight: 500
+        - asset: assets/fuentes/Nunito-600.ttf
+          weight: 600
+        - asset: assets/fuentes/Nunito-700.ttf
+          weight: 700
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
