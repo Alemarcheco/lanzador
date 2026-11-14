@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -19,8 +22,19 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter test
-      - run: flutter build apk --release
+      - run: flutter build apk --release --build-number=${{ github.run_number }}
+      - run: cp build/app/outputs/flutter-apk/app-release.apk lanzador.apk
       - uses: actions/upload-artifact@v4
         with:
           name: lanzador-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: lanzador.apk
+      # Publica el APK en Releases: enlace directo
+      # https://github.com/Alemarcheco/lanzador/releases/latest/download/lanzador.apk
+      - name: Publicar release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ github.run_number }}" lanzador.apk \
+            --title "Lanzador v${{ github.run_number }}" \
+            --notes "APK compilado automáticamente desde ${{ github.sha }}" \
+            --latest
