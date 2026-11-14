@@ -17,11 +17,29 @@ const _favoritasIniciales = [
   ['com.android.chrome'],
 ];
 
+/// Widget colocado en la pantalla de inicio.
+class WidgetColocado {
+  WidgetColocado(this.id, this.alto);
+  final int id;
+  double alto; // dp
+
+  @override
+  String toString() => '$id:${alto.round()}';
+
+  static WidgetColocado? leer(String s) {
+    final p = s.split(':');
+    final id = int.tryParse(p.first);
+    if (id == null) return null;
+    return WidgetColocado(id, p.length > 1 ? double.tryParse(p[1]) ?? 160 : 160);
+  }
+}
+
 class Modelo extends ChangeNotifier {
   SharedPreferences? _prefs;
 
   List<AppInfo> apps = [];
   List<String> _favoritos = [];
+  List<WidgetColocado> widgets = [];
   bool cargado = false;
 
   bool reloj24 = true;
@@ -40,6 +58,10 @@ class Modelo extends ChangeNotifier {
     oscurecer = p.getBool('oscurecer') ?? true;
     fondoGalaxia = p.getBool('fondoGalaxia') ?? false;
     tamTexto = p.getDouble('tamTexto') ?? 20;
+    widgets = (p.getStringList('widgets') ?? [])
+        .map(WidgetColocado.leer)
+        .whereType<WidgetColocado>()
+        .toList();
     final guardados = p.getStringList('favoritos');
     await recargar();
     if (guardados == null) {
@@ -153,6 +175,42 @@ class Modelo extends ChangeNotifier {
       }
     }
     return [...empiezan, ...contienen];
+  }
+
+  // ---- Widgets ----
+  static const altoMin = 60.0, altoMax = 600.0;
+
+  void _guardarWidgets() =>
+      _prefs?.setStringList('widgets', widgets.map((w) => w.toString()).toList());
+
+  void agregarWidget(int id, double alto) {
+    widgets.add(WidgetColocado(id, alto.clamp(80, 400).toDouble()));
+    _guardarWidgets();
+    notifyListeners();
+  }
+
+  void quitarWidget(WidgetColocado w) {
+    widgets.remove(w);
+    Plataforma.quitarWidget(w.id);
+    _guardarWidgets();
+    notifyListeners();
+  }
+
+  void cambiarAltoWidget(WidgetColocado w, double delta) {
+    w.alto = (w.alto + delta).clamp(altoMin, altoMax).toDouble();
+    _guardarWidgets();
+    notifyListeners();
+  }
+
+  void moverWidget(WidgetColocado w, int paso) {
+    final i = widgets.indexOf(w);
+    final j = i + paso;
+    if (i < 0 || j < 0 || j >= widgets.length) return;
+    widgets
+      ..removeAt(i)
+      ..insert(j, w);
+    _guardarWidgets();
+    notifyListeners();
   }
 
   void ponerReloj24(bool v) {

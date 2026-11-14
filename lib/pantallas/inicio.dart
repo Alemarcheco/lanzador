@@ -6,8 +6,10 @@ import '../widgets/estilo.dart';
 import '../widgets/fila_app.dart';
 import '../widgets/indice.dart';
 import '../widgets/reloj.dart';
+import '../widgets/vista_widget.dart';
 import 'ajustes.dart';
 import 'buscar.dart';
+import 'elegir_widget.dart';
 
 class PantallaInicio extends StatefulWidget {
   const PantallaInicio({super.key, required this.modelo, required this.navegador});
@@ -66,6 +68,51 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
 
   void _abrirAjustes() {
     Navigator.of(context).push(rutaTransparente(PantallaAjustes(modelo: m)));
+  }
+
+  void _menuInicio() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xF0181C26),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.widgets_outlined, color: Colors.white),
+              title: const Text('Añadir widget', style: TextStyle(color: Colors.white, fontSize: 16)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => PantallaElegirWidget(modelo: m)),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.wallpaper, color: Colors.white),
+              title: const Text('Fondo de pantalla', style: TextStyle(color: Colors.white, fontSize: 16)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Plataforma.elegirFondo();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined, color: Colors.white),
+              title: const Text('Ajustes del launcher', style: TextStyle(color: Colors.white, fontSize: 16)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _abrirAjustes();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -145,7 +192,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
         if (v > 300) Plataforma.notificaciones();
         if (v < -300) _abrirBuscar();
       },
-      onLongPress: _abrirAjustes,
+      onLongPress: _menuInicio,
       child: Padding(
         padding: const EdgeInsets.only(left: 28, right: 8),
         child: Column(
@@ -180,7 +227,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
     if (!m.cargado) return const SizedBox();
     final esFav = _seleccion == marcaFavoritos;
     final lista = esFav ? m.favoritas : m.appsDeLetra(_seleccion);
-    if (esFav && lista.isEmpty) {
+    if (esFav && lista.isEmpty && m.widgets.isEmpty) {
       return Align(
         alignment: Alignment.topLeft,
         child: TextButton.icon(
@@ -207,6 +254,9 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
               ),
             ),
           ),
+        if (esFav)
+          for (final w in m.widgets)
+            VistaWidget(key: ObjectKey(w), widgetColocado: w, modelo: m),
         for (final a in lista) FilaApp(app: a, modelo: m, alAbrir: () => _abrir(a)),
       ],
     );

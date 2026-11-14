@@ -7,6 +7,7 @@ Launcher (pantalla de inicio) minimalista para Android, hecho con Flutter.
 - Lista vertical de apps favoritas con icono y nombre.
 - Índice A–Z en el borde derecho: toca o desliza el dedo por las letras para ver las apps de cada letra; la ★ vuelve a los favoritos. El circulito de abajo abre los ajustes.
 - Mantén pulsada una app: añadir/quitar de favoritos, información de la app, desinstalar.
+- Widgets de Android (clima, Spotify, calendario…): mantén pulsado un espacio vacío → Añadir widget. Aparecen encima de los favoritos; mantén pulsado un widget para cambiar su alto, moverlo o quitarlo.
 - Desliza hacia arriba para buscar entre todas las apps; hacia abajo para abrir las notificaciones.
 - Ajustes: ordenar/añadir/quitar favoritos, reloj 12/24 h, mostrar iconos, oscurecer fondo, tamaño del texto, cambiar fondo, elegir como launcher predeterminado.
 
@@ -21,7 +22,8 @@ flutter pub get
 flutter test
 flutter build apk      # build/app/outputs/flutter-apk/app-release.apk
 ```
-Al subirlo a GitHub, la acción `Compilar APK` genera el APK automáticamente (pestaña Actions).
+Al subirlo a GitHub, la acción `Compilar APK` genera el APK y lo publica en Releases.
+Descarga directa: https://github.com/Alemarcheco/lanzador/releases/latest/download/lanzador.apk
 
 ## Activarlo
 Instala el APK, pulsa el botón de inicio y elige "Lanzador" → "Siempre". También desde Ajustes del launcher → "Usar como pantalla de inicio".

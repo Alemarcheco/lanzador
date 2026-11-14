@@ -1,5 +1,9 @@
 package com.feito.lanzador
 
+import android.app.Activity
+import android.appwidget.AppWidgetHost
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -15,6 +19,12 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.AlarmClock
 import android.provider.Settings
+import android.view.Gravity
+import android.view.View
+import android.widget.TextView
+import io.flutter.plugin.common.StandardMessageCodec
+import io.flutter.plugin.platform.PlatformView
+import io.flutter.plugin.platform.PlatformViewFactory
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs
 import io.flutter.embedding.engine.FlutterEngine
@@ -27,6 +37,12 @@ class MainActivity : FlutterActivity() {
     private val hilos = Executors.newFixedThreadPool(3)
     private val principal = Handler(Looper.getMainLooper())
     private var receptorRegistrado = false
+
+    // ---- Widgets ----
+    private val widgetManager by lazy { AppWidgetManager.getInstance(applicationContext) }
+    private val widgetHost by lazy { AppWidgetHost(applicationContext, 1024) }
+    private var resultadoWidget: MethodChannel.Result? = null
+    private var widgetPendiente = -1
 
     private val receptorApps = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -55,6 +71,16 @@ class MainActivity : FlutterActivity() {
         receptorRegistrado = true
     }
 
+    override fun onStart() {
+        super.onStart()
+        try { widgetHost.startListening() } catch (_: Exception) {}
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try { widgetHost.stopListening() } catch (_: Exception) {}
+    }
+
     override fun onDestroy() {
         if (receptorRegistrado) {
             try { unregisterReceiver(receptorApps) } catch (_: Exception) {}
@@ -73,6 +99,8 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        flutterEngine.platformViewsController.registry
+            .registerViewFactory("com.feito.lanzador/widget", FabricaWidget(this))
         val c = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.feito.lanzador/apps")
         canal = c
         c.setMethodCallHandler { llamada, resultado ->
@@ -125,9 +153,141 @@ class MainActivity : FlutterActivity() {
                 "launcherPredeterminado" -> resultado.success(intentar {
                     startActivity(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 })
+                "proveedoresWidget" -> enHilo(resultado) { proveedoresWidget() }
+                "vistaPreviaWidget" -> enHilo(resultado) { vistaPreviaWidget(llamada.argument<String>("proveedor")!!) }
+                "anadirWidget" -> anadirWidget(llamada.argument<String>("proveedor")!!, resultado)
+                "quitarWidget" -> {
+                    try { widgetHost.deleteAppWidgetId(llamada.argument<Int>("id")!!) } catch (_: Exception) {}
+                    resultado.success(true)
+                }
+                "existeWidget" -> resultado.success(widgetManager.getAppWidgetInfo(llamada.argument<Int>("id")!!) != null)
                 else -> resultado.notImplemented()
             }
         }
+    }
+
+    // ---------------- Widgets ----------------
+
+    private fun dp(px: Int): Int = (px / resources.displayMetrics.density).toInt()
+
+    private fun proveedoresWidget(): List<Map<String, Any>> {
+        val pm = packageManager
+        return widgetManager.installedProviders.map { info ->
+            val paquete = info.provider.packageName
+            val app = try {
+                pm.getApplicationLabel(pm.getApplicationInfo(paquete, 0)).toString()
+            } catch (_: Exception) { paquete }
+            mapOf(
+                "proveedor" to info.provider.flattenToString(),
+                "nombre" to info.loadLabel(pm),
+                "app" to app,
+                "paquete" to paquete,
+                "ancho" to dp(info.minWidth),
+                "alto" to dp(info.minHeight),
+            )
+        }
+    }
+
+    private fun vistaPreviaWidget(proveedor: String): ByteArray? {
+        val cn = ComponentName.unflattenFromString(proveedor) ?: return null
+        val info = widgetManager.installedProviders.firstOrNull { it.provider == cn } ?: return null
+        val densidad = resources.displayMetrics.densityDpi
+        val d = info.loadPreviewImage(this, densidad) ?: info.loadIcon(this, densidad) ?: return null
+        var w = d.intrinsicWidth.takeIf { it > 0 } ?: 300
+        var h = d.intrinsicHeight.takeIf { it > 0 } ?: 300
+        val escala = minOf(1f, 600f / maxOf(w, h))
+        w = maxOf(1, (w * escala).toInt()); h = maxOf(1, (h * escala).toInt())
+        val mapa = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        d.setBounds(0, 0, w, h)
+        d.draw(Canvas(mapa))
+        val salida = ByteArrayOutputStream()
+        mapa.compress(Bitmap.CompressFormat.PNG, 100, salida)
+        mapa.recycle()
+        return salida.toByteArray()
+    }
+
+    private fun anadirWidget(proveedor: String, resultado: MethodChannel.Result) {
+        val cn = ComponentName.unflattenFromString(proveedor)
+        if (cn == null) { resultado.success(null); return }
+        resultadoWidget?.success(null)
+        resultadoWidget = resultado
+        val id = widgetHost.allocateAppWidgetId()
+        widgetPendiente = id
+        if (widgetManager.bindAppWidgetIdIfAllowed(id, cn)) {
+            configurarWidget(id)
+        } else {
+            // Android pide permiso al usuario la primera vez.
+            val i = Intent(AppWidgetManager.ACTION_APPWIDGET_BIND)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, cn)
+            try {
+                @Suppress("DEPRECATION")
+                startActivityForResult(i, PEDIR_PERMISO)
+            } catch (_: Exception) { cancelarWidget() }
+        }
+    }
+
+    private fun configurarWidget(id: Int) {
+        val info = widgetManager.getAppWidgetInfo(id)
+        if (info?.configure == null) { terminarWidget(id); return }
+        try {
+            if (Build.VERSION.SDK_INT >= 26) {
+                widgetHost.startAppWidgetConfigureActivityForResult(this, id, 0, CONFIGURAR, null)
+            } else {
+                val i = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE)
+                    .setComponent(info.configure)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                @Suppress("DEPRECATION")
+                startActivityForResult(i, CONFIGURAR)
+            }
+        } catch (_: Exception) {
+            // Algunos widgets no dejan abrir su configuración desde fuera: se añade igual.
+            terminarWidget(id)
+        }
+    }
+
+    private fun terminarWidget(id: Int) {
+        val info = widgetManager.getAppWidgetInfo(id)
+        resultadoWidget?.success(mapOf("id" to id, "alto" to (info?.let { dp(it.minHeight) } ?: 120)))
+        resultadoWidget = null
+        widgetPendiente = -1
+    }
+
+    private fun cancelarWidget() {
+        if (widgetPendiente != -1) {
+            try { widgetHost.deleteAppWidgetId(widgetPendiente) } catch (_: Exception) {}
+        }
+        widgetPendiente = -1
+        resultadoWidget?.success(null)
+        resultadoWidget = null
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        val id = data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetPendiente) ?: widgetPendiente
+        when (requestCode) {
+            PEDIR_PERMISO -> if (resultCode == Activity.RESULT_OK && id != -1) configurarWidget(id) else cancelarWidget()
+            CONFIGURAR -> if (resultCode == Activity.RESULT_OK && id != -1) terminarWidget(id) else cancelarWidget()
+        }
+    }
+
+    fun crearVistaWidget(contexto: Context, id: Int, anchoDp: Int, altoDp: Int): View {
+        val info: AppWidgetProviderInfo? = widgetManager.getAppWidgetInfo(id)
+        if (info == null) {
+            return TextView(contexto).apply {
+                text = "Widget no disponible (mantén pulsado para quitarlo)"
+                setTextColor(0xCCFFFFFF.toInt())
+                gravity = Gravity.CENTER
+            }
+        }
+        val vista = widgetHost.createView(contexto, id, info)
+        try {
+            @Suppress("DEPRECATION")
+            vista.updateAppWidgetSize(Bundle(), anchoDp, altoDp, anchoDp, altoDp)
+        } catch (_: Exception) {}
+        return vista
     }
 
     private fun intentar(accion: () -> Unit): Boolean = try {
@@ -161,6 +321,11 @@ class MainActivity : FlutterActivity() {
             }
     }
 
+    companion object {
+        private const val PEDIR_PERMISO = 4101
+        private const val CONFIGURAR = 4102
+    }
+
     private fun icono(paquete: String, actividad: String, tam: Int): ByteArray {
         val pm = packageManager
         val dibujo = try {
@@ -184,5 +349,20 @@ class MainActivity : FlutterActivity() {
         mapa.compress(Bitmap.CompressFormat.PNG, 100, salida)
         mapa.recycle()
         return salida.toByteArray()
+    }
+}
+
+/** Crea la vista nativa de un widget para mostrarla dentro de Flutter. */
+class FabricaWidget(private val actividad: MainActivity) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+    override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
+        val p = args as? Map<*, *> ?: emptyMap<String, Any>()
+        val id = (p["id"] as? Number)?.toInt() ?: -1
+        val ancho = (p["ancho"] as? Number)?.toInt() ?: 300
+        val alto = (p["alto"] as? Number)?.toInt() ?: 120
+        val vista = actividad.crearVistaWidget(actividad, id, ancho, alto)
+        return object : PlatformView {
+            override fun getView(): View = vista
+            override fun dispose() {}
+        }
     }
 }

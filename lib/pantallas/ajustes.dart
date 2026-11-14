@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../modelo.dart';
 import '../plataforma.dart';
 import '../widgets/fila_app.dart';
+import 'elegir_widget.dart';
 
 const _fondoPanel = Color(0xE6101420);
 const _blanco = TextStyle(color: Colors.white, fontSize: 16);
@@ -36,6 +37,19 @@ class PantallaAjustes extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute<void>(builder: (_) => PantallaFavoritos(modelo: m)),
+              ),
+            ),
+            _titulo('Widgets'),
+            ListTile(
+              leading: const Icon(Icons.widgets_outlined, color: Colors.white),
+              title: const Text('Añadir widget', style: _blanco),
+              subtitle: Text(
+                  '${m.widgets.length} en la pantalla · mantén pulsado un widget para cambiar su tamaño, moverlo o quitarlo',
+                  style: _gris),
+              trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => PantallaElegirWidget(modelo: m)),
               ),
             ),
             _titulo('Aspecto'),
@@ -95,7 +109,8 @@ class PantallaAjustes extends StatelessWidget {
                 'Gestos: toca o desliza por las letras de la derecha para ver las apps de cada letra; '
                 'la estrella vuelve a los favoritos. Desliza hacia arriba para buscar entre todas las apps '
                 'y hacia abajo para abrir las notificaciones. Mantén pulsada una app para añadirla a '
-                'favoritos, ver su información o desinstalarla.',
+                'favoritos, ver su información o desinstalarla. Mantén pulsado un espacio vacío para '
+                'añadir widgets (clima, Spotify…).',
                 style: _gris,
               ),
             ),
