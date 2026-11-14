@@ -72,6 +72,41 @@ flutter:
           weight: 600
         - asset: assets/fuentes/Nunito-700.ttf
           weight: 700
+    - family: Orbitron
+      fonts:
+        - asset: assets/fuentes/Orbitron-500.ttf
+          weight: 500
+        - asset: assets/fuentes/Orbitron-700.ttf
+          weight: 700
+    - family: PlayfairDisplay
+      fonts:
+        - asset: assets/fuentes/PlayfairDisplay-500.ttf
+          weight: 500
+        - asset: assets/fuentes/PlayfairDisplay-700.ttf
+          weight: 700
+    - family: SpaceMono
+      fonts:
+        - asset: assets/fuentes/SpaceMono-400.ttf
+          weight: 400
+        - asset: assets/fuentes/SpaceMono-700.ttf
+          weight: 700
+    - family: Comfortaa
+      fonts:
+        - asset: assets/fuentes/Comfortaa-500.ttf
+          weight: 500
+        - asset: assets/fuentes/Comfortaa-700.ttf
+          weight: 700
+    - family: BebasNeue
+      fonts:
+        - asset: assets/fuentes/BebasNeue-400.ttf
+    - family: Outfit
+      fonts:
+        - asset: assets/fuentes/Outfit-200.ttf
+          weight: 200
+        - asset: assets/fuentes/Outfit-300.ttf
+          weight: 300
+        - asset: assets/fuentes/Outfit-600.ttf
+          weight: 600
 
   # To add assets to your application, add an assets section, like this:
   # assets:

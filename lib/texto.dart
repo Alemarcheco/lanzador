@@ -55,3 +55,37 @@ String horaTexto(DateTime d, {bool formato24 = true}) {
   final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
   return '$h:$m';
 }
+
+const _unidades = [
+  'cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
+  'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete',
+  'dieciocho', 'diecinueve', 'veinte', 'veintiuno', 'veintidós', 'veintitrés',
+  'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve',
+];
+const _decenas = {30: 'treinta', 40: 'cuarenta', 50: 'cincuenta'};
+
+/// Número de 0 a 59 en palabras.
+String numeroEnPalabras(int n) {
+  if (n < 30) return _unidades[n];
+  final d = (n ~/ 10) * 10, u = n % 10;
+  return u == 0 ? _decenas[d]! : '${_decenas[d]} y ${_unidades[u]}';
+}
+
+/// "Son las ocho\ny diecisiete", "Es la una\ny cuarto", "Son las doce\nen punto"
+String horaEnPalabras(DateTime d) {
+  final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
+  final nombreHora = h == 1 ? 'una' : numeroEnPalabras(h);
+  final inicio = h == 1 ? 'Es la $nombreHora' : 'Son las $nombreHora';
+  final m = d.minute;
+  final String fin;
+  if (m == 0) {
+    fin = 'en punto';
+  } else if (m == 15) {
+    fin = 'y cuarto';
+  } else if (m == 30) {
+    fin = 'y media';
+  } else {
+    fin = 'y ${numeroEnPalabras(m)}';
+  }
+  return '$inicio\n$fin';
+}

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../modelo.dart';
 import '../plataforma.dart';
 import '../widgets/fila_app.dart';
 import 'elegir_widget.dart';
+import 'personalizar.dart';
 
 const _fondoPanel = Color(0xE6101420);
 const _blanco = TextStyle(color: Colors.white, fontSize: 16);
@@ -39,6 +41,29 @@ class PantallaAjustes extends StatelessWidget {
                 MaterialPageRoute<void>(builder: (_) => PantallaFavoritos(modelo: m)),
               ),
             ),
+            _titulo('Personalizar'),
+            _ir(context, Icons.palette_outlined, 'Temas', m.tema.nombre, PantallaTemas(modelo: m)),
+            _ir(context, Icons.schedule, 'Reloj', 'Estilo, tamaño, color y posición', PantallaReloj(modelo: m)),
+            _ir(context, Icons.apps, 'Iconos', 'Forma, tamaño, blanco y negro y paquetes de iconos',
+                PantallaIconos(modelo: m)),
+            _titulo('Notificaciones'),
+            SwitchListTile(
+              secondary: const Icon(Icons.circle_notifications_outlined, color: Colors.white),
+              title: const Text('Puntos de notificación', style: _blanco),
+              subtitle: const Text('Un punto junto al nombre de las apps con notificaciones', style: _gris),
+              value: m.puntosNotificacion,
+              onChanged: m.ponerPuntosNotificacion,
+            ),
+            if (m.puntosNotificacion && !m.permisoNotificaciones)
+              ListTile(
+                leading: const Icon(Icons.lock_open, color: Color(0xFFFFD54F)),
+                title: const Text('Dar acceso a las notificaciones', style: _blanco),
+                subtitle: const Text(
+                    'Activa "Lanzador" en la lista. Si Samsung dice "configuración restringida": '
+                    'Ajustes → Aplicaciones → Lanzador → ⋮ → Permitir configuración restringida, y vuelve a intentarlo.',
+                    style: _gris),
+                onTap: Plataforma.pedirPermisoNotificaciones,
+              ),
             _titulo('Widgets'),
             ListTile(
               leading: const Icon(Icons.widgets_outlined, color: Colors.white),
@@ -103,6 +128,25 @@ class PantallaAjustes extends StatelessWidget {
               subtitle: const Text('Elige "Lanzador" como app de inicio predeterminada', style: _gris),
               onTap: Plataforma.launcherPredeterminado,
             ),
+            FutureBuilder<String?>(
+              future: Plataforma.ultimoError(),
+              builder: (context, s) {
+                final e = s.data;
+                if (e == null || e.isEmpty) return const SizedBox();
+                return ListTile(
+                  leading: const Icon(Icons.bug_report_outlined, color: Color(0xFFFF8A80)),
+                  title: const Text('Hubo un error (toca para copiarlo)', style: _blanco),
+                  subtitle: Text(e.split('\n').take(3).join('\n'), style: _gris, maxLines: 3),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: e));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Copiado. Pégalo en el chat para que lo arregle.')),
+                    );
+                  },
+                  onLongPress: Plataforma.borrarError,
+                );
+              },
+            ),
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
               child: Text(
@@ -119,6 +163,14 @@ class PantallaAjustes extends StatelessWidget {
       ),
     );
   }
+
+  Widget _ir(BuildContext context, IconData icono, String titulo, String sub, Widget pantalla) => ListTile(
+        leading: Icon(icono, color: Colors.white),
+        title: Text(titulo, style: _blanco),
+        subtitle: Text(sub, style: _gris),
+        trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+        onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => pantalla)),
+      );
 
   Widget _titulo(String t) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),

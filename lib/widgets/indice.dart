@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'estilo.dart';
+import '../temas.dart';
 
 /// Marca usada en el índice para "favoritos".
 const marcaFavoritos = '★';
@@ -15,7 +15,10 @@ class IndiceLetras extends StatefulWidget {
     required this.seleccion,
     required this.alElegir,
     required this.alAjustes,
+    required this.tema,
   });
+
+  final Tema tema;
 
   /// Incluye la marca de favoritos en primer lugar.
   final List<String> letras;
@@ -87,7 +90,7 @@ class _IndiceLetrasState extends State<IndiceLetras> {
                   height: 9,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.6),
+                    border: Border.all(color: widget.tema.texto, width: 1.6),
                   ),
                 ),
               ),
@@ -127,15 +130,18 @@ class _IndiceLetrasState extends State<IndiceLetras> {
           scale: escala,
           child: esFav
               ? Icon(Icons.star_outline_rounded,
-                  color: Colors.white, size: fuente * 1.15, shadows: sombraTexto)
+                  color: elegida ? widget.tema.acento : widget.tema.texto,
+                  size: fuente * 1.15,
+                  shadows: widget.tema.sombras)
               : Text(
                   letra,
                   style: TextStyle(
-                    color: elegida ? const Color(0xFFFFD54F) : Colors.white,
+                    fontFamily: widget.tema.fuente,
+                    color: elegida ? widget.tema.acento : widget.tema.texto,
                     fontSize: fuente,
                     height: 1,
                     fontWeight: elegida ? FontWeight.w700 : FontWeight.w600,
-                    shadows: sombraTexto,
+                    shadows: widget.tema.sombras,
                   ),
                 ),
         ),

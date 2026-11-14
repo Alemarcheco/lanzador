@@ -19,6 +19,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.AlarmClock
 import android.provider.Settings
+import android.util.SizeF
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
+import java.util.concurrent.ConcurrentHashMap
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
 import android.widget.TextView
@@ -55,6 +60,16 @@ class MainActivity : FlutterActivity() {
         FlutterActivityLaunchConfigs.BackgroundMode.transparent
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Guarda el último error grave para poder verlo en Ajustes y corregirlo.
+        val anterior = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { hilo, error ->
+            try {
+                java.io.File(filesDir, "ultimo_error.txt").writeText(
+                    java.util.Date().toString() + "\n" + android.util.Log.getStackTraceString(error)
+                )
+            } catch (_: Exception) {}
+            anterior?.uncaughtException(hilo, error)
+        }
         super.onCreate(savedInstanceState)
         val filtro = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
@@ -81,7 +96,13 @@ class MainActivity : FlutterActivity() {
         try { widgetHost.stopListening() } catch (_: Exception) {}
     }
 
+    override fun onResume() {
+        super.onResume()
+        canal?.invokeMethod("notificaciones", Notificaciones.conteo())
+    }
+
     override fun onDestroy() {
+        Notificaciones.alCambiar = null
         if (receptorRegistrado) {
             try { unregisterReceiver(receptorApps) } catch (_: Exception) {}
         }
@@ -103,12 +124,29 @@ class MainActivity : FlutterActivity() {
             .registerViewFactory("com.feito.lanzador/widget", FabricaWidget(this))
         val c = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.feito.lanzador/apps")
         canal = c
+        Notificaciones.alCambiar = { conteo ->
+            principal.post { canal?.invokeMethod("notificaciones", conteo) }
+        }
         c.setMethodCallHandler { llamada, resultado ->
             val paquete = llamada.argument<String>("paquete")
             val actividad = llamada.argument<String>("actividad")
             when (llamada.method) {
                 "apps" -> enHilo(resultado) { listarApps() }
-                "icono" -> enHilo(resultado) { icono(paquete!!, actividad!!, llamada.argument<Int>("tam") ?: 144) }
+                "icono" -> enHilo(resultado) {
+                    icono(paquete!!, actividad!!, llamada.argument<Int>("tam") ?: 144, llamada.argument<String>("pack") ?: "")
+                }
+                "packsIconos" -> enHilo(resultado) { packsIconos() }
+                "notificaciones" -> resultado.success(Notificaciones.conteo())
+                "permisoNotificaciones" -> resultado.success(tienePermisoNotificaciones())
+                "ultimoError" -> resultado.success(
+                    try { java.io.File(filesDir, "ultimo_error.txt").takeIf { it.exists() }?.readText() } catch (_: Exception) { null }
+                )
+                "borrarError" -> resultado.success(
+                    try { java.io.File(filesDir, "ultimo_error.txt").delete() } catch (_: Exception) { false }
+                )
+                "pedirPermisoNotificaciones" -> resultado.success(intentar {
+                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                })
                 "abrir" -> resultado.success(intentar {
                     val i = Intent(Intent.ACTION_MAIN)
                         .addCategory(Intent.CATEGORY_LAUNCHER)
@@ -128,7 +166,7 @@ class MainActivity : FlutterActivity() {
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     )
                 })
-                "notificaciones" -> resultado.success(intentar {
+                "panelNotificaciones" -> resultado.success(intentar {
                     @Suppress("WrongConstant")
                     val servicio = getSystemService("statusbar")
                     Class.forName("android.app.StatusBarManager")
@@ -306,12 +344,29 @@ class MainActivity : FlutterActivity() {
                 gravity = Gravity.CENTER
             }
         }
-        val vista = widgetHost.createView(contexto, id, info)
+        // Los widgets modernos (Samsung, Google) usan atributos y colores del tema del
+        // sistema; con el tema antiguo de la actividad fallan con "No se puede mostrar el contenido".
+        val tema = if (Build.VERSION.SDK_INT >= 29) {
+            android.R.style.Theme_DeviceDefault_DayNight
+        } else {
+            android.R.style.Theme_DeviceDefault
+        }
+        val contextoTema = ContextThemeWrapper(contexto, tema)
+        val vista = widgetHost.createView(contextoTema, id, info)
         try {
-            @Suppress("DEPRECATION")
-            vista.updateAppWidgetSize(Bundle(), anchoDp, altoDp, anchoDp, altoDp)
+            if (Build.VERSION.SDK_INT >= 31) {
+                vista.updateAppWidgetSize(Bundle(), listOf(SizeF(anchoDp.toFloat(), altoDp.toFloat())))
+            } else {
+                @Suppress("DEPRECATION")
+                vista.updateAppWidgetSize(Bundle(), anchoDp, altoDp, anchoDp, altoDp)
+            }
         } catch (_: Exception) {}
         return vista
+    }
+
+    private fun tienePermisoNotificaciones(): Boolean {
+        val lista = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: return false
+        return lista.split(":").any { ComponentName.unflattenFromString(it)?.packageName == packageName }
     }
 
     private fun intentar(accion: () -> Unit): Boolean = try {
@@ -350,18 +405,12 @@ class MainActivity : FlutterActivity() {
         private const val CONFIGURAR = 4102
     }
 
-    private fun icono(paquete: String, actividad: String, tam: Int): ByteArray {
-        val pm = packageManager
-        val dibujo = try {
-            pm.getActivityIcon(ComponentName(paquete, actividad))
-        } catch (_: Exception) {
-            pm.defaultActivityIcon
-        }
+    private fun aPng(dibujo: android.graphics.drawable.Drawable, tam: Int, adaptativo: Boolean): ByteArray {
         val mapa = Bitmap.createBitmap(tam, tam, Bitmap.Config.ARGB_8888)
         val lienzo = Canvas(mapa)
-        if (Build.VERSION.SDK_INT >= 26 && dibujo is AdaptiveIconDrawable) {
+        if (adaptativo && Build.VERSION.SDK_INT >= 26 && dibujo is AdaptiveIconDrawable) {
             // Se dibujan las capas completas (sin la máscara del sistema) para que
-            // Flutter les dé la forma de cuadrado redondeado.
+            // Flutter les dé la forma elegida.
             val m = tam / 4
             dibujo.background?.let { it.setBounds(-m, -m, tam + m, tam + m); it.draw(lienzo) }
             dibujo.foreground?.let { it.setBounds(-m, -m, tam + m, tam + m); it.draw(lienzo) }
@@ -373,6 +422,88 @@ class MainActivity : FlutterActivity() {
         mapa.compress(Bitmap.CompressFormat.PNG, 100, salida)
         mapa.recycle()
         return salida.toByteArray()
+    }
+
+    private fun icono(paquete: String, actividad: String, tam: Int, pack: String): Map<String, Any> {
+        if (pack.isNotEmpty()) {
+            iconoDePack(pack, paquete, actividad)?.let {
+                return mapOf("png" to aPng(it, tam, false), "pack" to true)
+            }
+        }
+        val pm = packageManager
+        val dibujo = try {
+            pm.getActivityIcon(ComponentName(paquete, actividad))
+        } catch (_: Exception) {
+            pm.defaultActivityIcon
+        }
+        return mapOf("png" to aPng(dibujo, tam, true), "pack" to false)
+    }
+
+    // ---------------- Paquetes de iconos (formato ADW / Nova) ----------------
+
+    private val accionesPacks = listOf(
+        "org.adw.launcher.THEMES",
+        "com.novalauncher.THEME",
+        "com.teslacoilsw.launcher.THEME",
+        "com.gau.go.launcherex.theme",
+        "com.anddoes.launcher.THEME",
+    )
+
+    private fun packsIconos(): List<Map<String, String>> {
+        val pm = packageManager
+        val vistos = LinkedHashMap<String, String>()
+        for (a in accionesPacks) {
+            for (ri in pm.queryIntentActivities(Intent(a), 0)) {
+                val p = ri.activityInfo.packageName
+                if (!vistos.containsKey(p)) {
+                    vistos[p] = try {
+                        pm.getApplicationLabel(pm.getApplicationInfo(p, 0)).toString()
+                    } catch (_: Exception) { p }
+                }
+            }
+        }
+        return vistos.map { mapOf("paquete" to it.key, "nombre" to it.value) }
+    }
+
+    private val mapasPacks = ConcurrentHashMap<String, Map<String, String>>()
+
+    private fun mapaPack(pack: String): Map<String, String> = mapasPacks.getOrPut(pack) {
+        val mapa = HashMap<String, String>()
+        try {
+            val res = packageManager.getResourcesForApplication(pack)
+            val idXml = res.getIdentifier("appfilter", "xml", pack)
+            val parser: XmlPullParser = if (idXml != 0) {
+                res.getXml(idXml)
+            } else {
+                XmlPullParserFactory.newInstance().newPullParser().apply {
+                    setInput(res.assets.open("appfilter.xml"), "utf-8")
+                }
+            }
+            var ev = parser.eventType
+            while (ev != XmlPullParser.END_DOCUMENT) {
+                if (ev == XmlPullParser.START_TAG && parser.name == "item") {
+                    val comp = parser.getAttributeValue(null, "component")
+                    val dib = parser.getAttributeValue(null, "drawable")
+                    if (comp != null && dib != null) mapa[comp.trim()] = dib.trim()
+                }
+                ev = parser.next()
+            }
+        } catch (_: Exception) {}
+        mapa
+    }
+
+    private fun iconoDePack(pack: String, paquete: String, actividad: String): android.graphics.drawable.Drawable? {
+        val mapa = mapaPack(pack)
+        if (mapa.isEmpty()) return null
+        val corta = if (actividad.startsWith(paquete)) actividad.substring(paquete.length) else actividad
+        val nombre = mapa["ComponentInfo{$paquete/$actividad}"]
+            ?: mapa["ComponentInfo{$paquete/$corta}"]
+            ?: return null
+        return try {
+            val res = packageManager.getResourcesForApplication(pack)
+            val id = res.getIdentifier(nombre, "drawable", pack)
+            if (id == 0) null else res.getDrawable(id, null)
+        } catch (_: Exception) { null }
     }
 }
 

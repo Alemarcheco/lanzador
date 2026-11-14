@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'plataforma.dart';
+import 'temas.dart';
 import 'texto.dart';
 
 /// Apps que se ponen como favoritas la primera vez (si están instaladas),
@@ -40,6 +41,14 @@ class Modelo extends ChangeNotifier {
   List<AppInfo> apps = [];
   List<String> _favoritos = [];
   List<WidgetColocado> widgets = [];
+
+  /// Sube cada vez que se vuelve al inicio para recrear las vistas de los widgets.
+  int generacionWidgets = 0;
+
+  /// Apps con notificaciones pendientes (paquete → cantidad).
+  Map<String, int> notificaciones = {};
+  bool puntosNotificacion = true;
+  bool permisoNotificaciones = false;
   bool cargado = false;
 
   bool reloj24 = true;
@@ -48,7 +57,23 @@ class Modelo extends ChangeNotifier {
   bool fondoGalaxia = false;
   double tamTexto = 20;
 
-  final Map<String, Future<Uint8List?>> _iconos = {};
+  // Personalización
+  String temaId = 'galaxia';
+  String estiloReloj = 'clasico';
+  bool relojAcento = false; // reloj con el color de acento del tema
+  double escalaReloj = 1.0;
+  bool relojCentrado = false;
+  bool mostrarFecha = true;
+  String formaIcono = 'redondeado';
+  double escalaIcono = 1.0;
+  bool iconosByN = false;
+  String packIconos = '';
+  Map<String, String> _nombres = {};
+  List<AppInfo> _appsSistema = [];
+
+  Tema get tema => temaPorId(temaId);
+
+  final Map<String, Future<IconoDatos?>> _iconos = {};
 
   Future<void> iniciar() async {
     _prefs = await SharedPreferences.getInstance();
@@ -58,6 +83,21 @@ class Modelo extends ChangeNotifier {
     oscurecer = p.getBool('oscurecer') ?? true;
     fondoGalaxia = p.getBool('fondoGalaxia') ?? false;
     tamTexto = p.getDouble('tamTexto') ?? 20;
+    temaId = p.getString('temaId') ?? 'galaxia';
+    puntosNotificacion = p.getBool('puntosNotificacion') ?? true;
+    estiloReloj = p.getString('estiloReloj') ?? 'clasico';
+    relojAcento = p.getBool('relojAcento') ?? false;
+    escalaReloj = p.getDouble('escalaReloj') ?? 1.0;
+    relojCentrado = p.getBool('relojCentrado') ?? false;
+    mostrarFecha = p.getBool('mostrarFecha') ?? true;
+    formaIcono = p.getString('formaIcono') ?? 'redondeado';
+    escalaIcono = p.getDouble('escalaIcono') ?? 1.0;
+    iconosByN = p.getBool('iconosByN') ?? false;
+    packIconos = p.getString('packIconos') ?? '';
+    _nombres = {
+      for (final linea in p.getStringList('nombres') ?? <String>[])
+        if (linea.contains('\t')) linea.split('\t').first: linea.split('\t').last,
+    };
     widgets = (p.getStringList('widgets') ?? [])
         .map(WidgetColocado.leer)
         .whereType<WidgetColocado>()
@@ -90,20 +130,40 @@ class Modelo extends ChangeNotifier {
 
   Future<void> recargar() async {
     try {
-      final nuevas = await Plataforma.apps();
-      nuevas.sort((a, b) => compararNombres(a.nombre, b.nombre));
-      final claves = nuevas.map((a) => a.clave).toSet();
-      _iconos.removeWhere((k, _) => !claves.contains(k));
-      apps = nuevas;
+      _appsSistema = await Plataforma.apps();
+      _aplicarNombres();
+      final claves = apps.map((a) => a.clave).toSet();
+      _iconos.removeWhere((k, _) => !claves.contains(k.split('|').first));
       notifyListeners();
     } catch (_) {}
+  }
+
+  void _aplicarNombres() {
+    final lista = [
+      for (final a in _appsSistema)
+        if (_nombres[a.clave] case final n? when n.trim().isNotEmpty) a.conNombre(n.trim()) else a,
+    ];
+    lista.sort((a, b) => compararNombres(a.nombre, b.nombre));
+    apps = lista;
+  }
+
+  void renombrar(AppInfo a, String nombre) {
+    final n = nombre.trim();
+    if (n.isEmpty || n == a.nombreOriginal) {
+      _nombres.remove(a.clave);
+    } else {
+      _nombres[a.clave] = n;
+    }
+    _prefs?.setStringList('nombres', [for (final e in _nombres.entries) '${e.key}\t${e.value}']);
+    _aplicarNombres();
+    notifyListeners();
   }
 
   /// Fuerza a volver a pedir los iconos (por ejemplo tras actualizar una app).
   void olvidarIconos() => _iconos.clear();
 
-  Future<Uint8List?> icono(AppInfo a) =>
-      _iconos.putIfAbsent(a.clave, () => Plataforma.icono(a));
+  Future<IconoDatos?> icono(AppInfo a) =>
+      _iconos.putIfAbsent('${a.clave}|$packIconos', () => Plataforma.icono(a, packIconos));
 
   AppInfo? _buscar(String clave) {
     for (final a in apps) {
@@ -236,6 +296,48 @@ class Modelo extends ChangeNotifier {
     _prefs?.setBool('fondoGalaxia', v);
     notifyListeners();
   }
+
+  // ---- Personalización ----
+  void _s(String k, Object v) {
+    final p = _prefs;
+    if (p == null) return;
+    if (v is bool) p.setBool(k, v);
+    if (v is double) p.setDouble(k, v);
+    if (v is String) p.setString(k, v);
+  }
+
+  void ponerPuntosNotificacion(bool v) {
+    puntosNotificacion = v;
+    _s('puntosNotificacion', v);
+    notifyListeners();
+  }
+
+  void ponerNotificaciones(Map<String, int> n) {
+    notificaciones = n;
+    notifyListeners();
+  }
+
+  Future<void> comprobarPermisoNotificaciones() async {
+    permisoNotificaciones = await Plataforma.permisoNotificaciones();
+    if (permisoNotificaciones) notificaciones = await Plataforma.notificaciones();
+    notifyListeners();
+  }
+
+  void recrearWidgets() {
+    generacionWidgets++;
+    notifyListeners();
+  }
+
+  void ponerTema(String v) { temaId = v; _s('temaId', v); notifyListeners(); }
+  void ponerEstiloReloj(String v) { estiloReloj = v; _s('estiloReloj', v); notifyListeners(); }
+  void ponerRelojAcento(bool v) { relojAcento = v; _s('relojAcento', v); notifyListeners(); }
+  void ponerEscalaReloj(double v) { escalaReloj = v; _s('escalaReloj', v); notifyListeners(); }
+  void ponerRelojCentrado(bool v) { relojCentrado = v; _s('relojCentrado', v); notifyListeners(); }
+  void ponerMostrarFecha(bool v) { mostrarFecha = v; _s('mostrarFecha', v); notifyListeners(); }
+  void ponerFormaIcono(String v) { formaIcono = v; _s('formaIcono', v); notifyListeners(); }
+  void ponerEscalaIcono(double v) { escalaIcono = v; _s('escalaIcono', v); notifyListeners(); }
+  void ponerIconosByN(bool v) { iconosByN = v; _s('iconosByN', v); notifyListeners(); }
+  void ponerPackIconos(String v) { packIconos = v; _s('packIconos', v); notifyListeners(); }
 
   void ponerTamTexto(double v) {
     tamTexto = v;

@@ -24,4 +24,11 @@ void main() {
     expect(horaTexto(DateTime(2026, 1, 1, 15, 5), formato24: false), '3:05');
     expect(horaTexto(DateTime(2026, 1, 1, 0, 5), formato24: false), '12:05');
   });
+
+  test('hora en palabras', () {
+    expect(horaEnPalabras(DateTime(2026, 1, 1, 8, 17)), 'Son las ocho\ny diecisiete');
+    expect(horaEnPalabras(DateTime(2026, 1, 1, 13, 15)), 'Es la una\ny cuarto');
+    expect(horaEnPalabras(DateTime(2026, 1, 1, 0, 0)), 'Son las doce\nen punto');
+    expect(horaEnPalabras(DateTime(2026, 1, 1, 21, 45)), 'Son las nueve\ny cuarenta y cinco');
+  });
 }

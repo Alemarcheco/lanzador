@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../modelo.dart';
 import '../plataforma.dart';
-import '../widgets/estilo.dart';
 import '../widgets/fila_app.dart';
 import '../widgets/indice.dart';
 import '../widgets/reloj.dart';
@@ -10,6 +9,7 @@ import '../widgets/vista_widget.dart';
 import 'ajustes.dart';
 import 'buscar.dart';
 import 'elegir_widget.dart';
+import 'personalizar.dart';
 
 class PantallaInicio extends StatefulWidget {
   const PantallaInicio({super.key, required this.modelo, required this.navegador});
@@ -30,6 +30,8 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     Plataforma.alBotonInicio = _volverAlInicio;
+    Plataforma.alNotificaciones = m.ponerNotificaciones;
+    m.comprobarPermisoNotificaciones();
     Plataforma.alCambiarApps = () {
       m.olvidarIconos();
       m.recargar();
@@ -44,7 +46,11 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) m.recargar();
+    if (state == AppLifecycleState.resumed) {
+      m.recargar();
+      m.recrearWidgets();
+      m.comprobarPermisoNotificaciones();
+    }
     if (state == AppLifecycleState.paused) {
       // Al volver al launcher se muestran otra vez los favoritos.
       _volverAlInicio();
@@ -90,6 +96,30 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(builder: (_) => PantallaElegirWidget(modelo: m)),
                 );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.palette_outlined, color: Colors.white),
+              title: const Text('Temas', style: TextStyle(color: Colors.white, fontSize: 16)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PantallaTemas(modelo: m)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.schedule, color: Colors.white),
+              title: const Text('Editar reloj', style: TextStyle(color: Colors.white, fontSize: 16)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PantallaReloj(modelo: m)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.apps, color: Colors.white),
+              title: const Text('Editar iconos', style: TextStyle(color: Colors.white, fontSize: 16)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PantallaIconos(modelo: m)));
               },
             ),
             ListTile(
@@ -169,6 +199,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
                             seleccion: _seleccion,
                             alElegir: (l) => setState(() => _seleccion = l),
                             alAjustes: _abrirAjustes,
+                            tema: m.tema,
                           ),
                         ),
                       ),
@@ -189,7 +220,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
       behavior: HitTestBehavior.translucent,
       onVerticalDragEnd: (d) {
         final v = d.primaryVelocity ?? 0;
-        if (v > 300) Plataforma.notificaciones();
+        if (v > 300) Plataforma.panelNotificaciones();
         if (v < -300) _abrirBuscar();
       },
       onLongPress: _menuInicio,
@@ -199,7 +230,11 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: alto * 0.14),
-            Reloj(formato24: m.reloj24),
+            Reloj(
+              modelo: m,
+              alMantener: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => PantallaReloj(modelo: m))),
+            ),
             const SizedBox(height: 22),
             Expanded(
               child: AnimatedSwitcher(
@@ -232,9 +267,8 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
         alignment: Alignment.topLeft,
         child: TextButton.icon(
           onPressed: _abrirAjustes,
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: const Text('Añadir favoritos',
-              style: TextStyle(color: Colors.white, fontSize: 18, shadows: sombraTexto)),
+          icon: Icon(Icons.add, color: m.tema.texto),
+          label: Text('Añadir favoritos', style: m.tema.estilo(18)),
         ),
       );
     }
@@ -246,12 +280,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
             padding: const EdgeInsets.only(left: 4, bottom: 4),
             child: Text(
               _seleccion,
-              style: const TextStyle(
-                color: Color(0xCCFFFFFF),
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-                shadows: sombraTexto,
-              ),
+              style: m.tema.estilo(30, color: m.tema.acento, peso: FontWeight.w700),
             ),
           ),
         if (esFav)

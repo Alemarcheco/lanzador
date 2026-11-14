@@ -23,7 +23,7 @@ class VistaWidget extends StatelessWidget {
             width: c.maxWidth,
             child: AndroidView(
               // La clave incluye el tamaño para que el widget se rehaga al cambiarlo.
-              key: ValueKey('${w.id}-${w.alto.round()}-${c.maxWidth.round()}'),
+              key: ValueKey('${w.id}-${w.alto.round()}-${c.maxWidth.round()}-${modelo.generacionWidgets}'),
               viewType: 'com.feito.lanzador/widget',
               creationParams: {'id': w.id, 'ancho': c.maxWidth.round(), 'alto': w.alto.round()},
               creationParamsCodec: const StandardMessageCodec(),
